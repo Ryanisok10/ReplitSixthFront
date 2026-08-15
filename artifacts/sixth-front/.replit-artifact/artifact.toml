@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Sixth Front"
+description = "A conversion-focused marketing website for independent restaurant owners to launch and manage branded online ordering, merch storefronts, landing pages, and managed POS sync through Sixth Front."
+version = "1.0.0"
+id = "artifacts/sixth-front"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20779
+
+[services.development]
+run = "pnpm --filter @workspace/sixth-front run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sixth-front", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sixth-front/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20779"
+BASE_PATH = "/"

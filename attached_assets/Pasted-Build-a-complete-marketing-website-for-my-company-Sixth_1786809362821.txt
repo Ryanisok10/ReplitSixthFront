@@ -1,0 +1,53 @@
+Build a complete marketing website for my company, "Sixth Front." You have full
+creative freedom on the design, layout, colors, fonts, imagery, and copy style —
+make it modern, clean, and trustworthy, optimized to convert an independent
+restaurant owner browsing on their phone. Make all the design decisions yourself.
+
+WHAT SIXTH FRONT DOES:
+We build and run online ordering for independent restaurants, cafes, and food
+trucks so they can take orders directly through their own branded online presence
+instead of relying on third-party marketplace apps. Everything is done-for-you:
+we build it, launch it, and manage it. The merchant handles the food, we handle
+the tech.
+
+SERVICES AND PRICING (show these clearly — a pricing section is important):
+- QR code / online food ordering: 8% commission per order, no setup fee —
+  we only make money when the merchant makes money
+- Online merch storefront: 12% commission per sale
+- Standalone landing page: $39/month
+- POS sync add-on: $39/month — a managed service that keeps the online menu
+  in sync with the merchant's in-store point of sale
+
+KEY SELLING POINTS TO WEAVE IN:
+- Free setup and build on commission plans
+- Fully done-for-you: no tech skills needed
+- Works on the devices the merchant already has — no special hardware to buy
+- The merchant's own brand front and center, not a marketplace
+- A buyout option exists for merchants who eventually want to own everything
+  outright (mention this briefly with no details — just "ask us about it")
+
+SECTIONS TO INCLUDE:
+- Hero with a strong headline and a clear "Get Started" call to action
+- How it works (simple 3-step flow: sign up, we build everything, you start
+  getting orders)
+- Services and pricing
+- Who it's for (restaurants, cafes, food trucks)
+- FAQ
+- Contact / signup section with the "Get Started" button repeated
+- Footer with the company name "Sixth Front"
+
+IMPORTANT RULES FOR THE COPY — DO NOT:
+- Promise 24/7 support, guaranteed response times, or guaranteed uptime
+- Say we fix technical issues directly — phrase support as "we handle support
+  requests and coordinate with our technology partners on your behalf"
+- Say or imply we provide hardware, tablets, printers, or any equipment
+- Say "cancel anytime," "no contracts," or "no commitment"
+- Claim the merchant owns their domain or website during the service term
+- Name any third-party software vendors or platforms — present everything as
+  Sixth Front's service
+- Claim our technology is built in-house or proprietary
+- Describe the POS sync as automatic or real-time — it's a managed sync service
+- Use fake testimonials, fake client logos, or made-up statistics
+
+Use placeholder contact info that I will replace later. Deliver the full,
+working website.

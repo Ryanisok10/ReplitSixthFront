@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: 38 42% 95%;
+  --foreground: 190 24% 17%;
+  --border: 33 23% 84%;
+  --input: 33 23% 78%;
+  --ring: 13 66% 49%;
+  --card: 38 42% 97%;
+  --card-foreground: 190 24% 17%;
+  --card-border: 33 23% 84%;
+  --popover: 38 42% 97%;
+  --popover-foreground: 190 24% 17%;
+  --popover-border: 33 23% 84%;
+  --primary: 13 66% 49%;
+  --primary-foreground: 38 42% 97%;
+  --secondary: 183 34% 31%;
+  --secondary-foreground: 38 42% 97%;
+  --muted: 35 24% 89%;
+  --muted-foreground: 190 12% 43%;
+  --accent: 41 88% 61%;
+  --accent-foreground: 190 24% 17%;
+  --destructive: 4 68% 42%;
+  --destructive-foreground: 38 42% 97%;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Instrument Serif', Georgia, serif;
+  --app-font-mono: 'Space Mono', monospace;
+  --radius: 1rem;
+  --primary-border: hsl(var(--primary));
+  --secondary-border: hsl(var(--secondary));
+  --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent));
+  --destructive-border: hsl(var(--destructive));
+  --shadow-sm: 0 8px 24px rgba(64, 48, 31, .08);
+  --shadow-md: 0 18px 42px rgba(64, 48, 31, .12);
+}
+
+.dark {
+  --background: 190 24% 17%;
+  --foreground: 38 42% 95%;
+  --border: 190 14% 30%;
+  --input: 190 14% 30%;
+  --ring: 13 66% 58%;
+  --card: 190 20% 21%;
+  --card-foreground: 38 42% 95%;
+  --card-border: 190 14% 30%;
+  --popover: 190 20% 21%;
+  --popover-foreground: 38 42% 95%;
+  --popover-border: 190 14% 30%;
+  --primary: 13 66% 58%;
+  --primary-foreground: 190 24% 17%;
+  --secondary: 41 88% 61%;
+  --secondary-foreground: 190 24% 17%;
+  --muted: 190 17% 25%;
+  --muted-foreground: 38 12% 70%;
+  --accent: 183 34% 48%;
+  --accent-foreground: 38 42% 95%;
+  --destructive: 4 68% 50%;
+  --destructive-foreground: 38 42% 95%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+  }
+  button, a, input, textarea { font: inherit; }
+  ::selection { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(1deg); }
+}
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.site-shell { overflow: hidden; }
+.serif { font-family: var(--app-font-serif); }
+.mono { font-family: var(--app-font-mono); }
+.eyebrow {
+  color: hsl(var(--primary));
+  font-family: var(--app-font-mono);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.reveal { animation: rise-in .75s cubic-bezier(.2,.8,.2,1) both; }
+.delay-1 { animation-delay: .1s; }
+.delay-2 { animation-delay: .2s; }
+.delay-3 { animation-delay: .3s; }
+
+.nav-link { position: relative; color: rgba(250,246,238,.72); transition: color .2s ease; }
+.nav-link:hover { color: hsl(var(--accent)); }
+.nav-link::after {
+  background: hsl(var(--accent));
+  bottom: -8px;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .25s ease;
+  width: 100%;
+}
+.nav-link:hover::after { transform: scaleX(1); }
+.outline-button, .solid-button { transition: transform .2s ease, background-color .2s ease, color .2s ease; }
+.outline-button:hover, .solid-button:hover { transform: translateY(-2px); }
+.solid-button:hover { background-color: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.outline-button:hover { border-color: hsl(var(--accent)); color: hsl(var(--accent)); }
+
+.hero-grid {
+  background-image: linear-gradient(rgba(250,246,238,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(250,246,238,.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+.hero-glow {
+  background: radial-gradient(circle, rgba(218, 157, 55, .22) 0, rgba(218, 157, 55, 0) 65%);
+  height: 580px;
+  pointer-events: none;
+  position: absolute;
+  right: -160px;
+  top: -140px;
+  width: 580px;
+}
+.order-card { animation: drift 6s ease-in-out infinite; }
+.card-shadow { box-shadow: 0 24px 60px rgba(15, 32, 34, .24); }
+.phone-shadow { box-shadow: 12px 30px 45px rgba(15, 32, 34, .22); }
+.section-rule { border-top: 1px solid hsl(var(--border)); }
+.soft-card { box-shadow: var(--shadow-sm); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.soft-card:hover { border-color: hsla(var(--primary), .45); box-shadow: var(--shadow-md); transform: translateY(-5px); }
+.step-number { color: hsl(var(--primary)); font-family: var(--app-font-mono); font-size: .75rem; letter-spacing: .1em; }
+.pricing-card { transition: transform .25s ease, box-shadow .25s ease; }
+.pricing-card:hover { box-shadow: 0 20px 40px rgba(64, 48, 31, .14); transform: translateY(-4px); }
+.pricing-featured { box-shadow: 0 18px 42px rgba(27, 82, 81, .18); }
+.faq-row { transition: background-color .2s ease; }
+.faq-row:hover { background-color: hsl(var(--muted)); }
+.faq-answer { animation: rise-in .25s ease both; }
+.form-input { transition: border-color .2s ease, box-shadow .2s ease; }
+.form-input:focus { border-color: hsl(var(--primary)); box-shadow: 0 0 0 3px hsla(var(--primary), .12); outline: none; }
+.footer-link { color: hsl(var(--muted-foreground)); transition: color .2s ease; }
+.footer-link:hover { color: hsl(var(--primary)); }
+
+@media (max-width: 767px) {
+  .mobile-menu { animation: rise-in .2s ease both; }
+  .hero-glow { right: -280px; }
+}
