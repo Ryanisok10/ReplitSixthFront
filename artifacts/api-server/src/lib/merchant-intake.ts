@@ -8,6 +8,7 @@ import type {
   StandardSignupInput,
 } from "@workspace/api-zod";
 import {
+  acceptanceAuditLogsTable,
   agreementAcceptancesTable,
   agreementVersionsTable,
   db,
@@ -44,14 +45,14 @@ export class IntakeConflictError extends Error {
   }
 }
 
-const DEFAULT_AGREEMENT = {
-  version: "DRAFT-2026-09-02-v2",
-  isDraft: true,
+export const DEFAULT_AGREEMENT = {
+  version: "MSA-2026-09-11-v2.0",
+  isDraft: false,
   isActive: true,
   merchantServicesTitle: "Master Merchant Services Agreement",
-  merchantServicesContent: `DRAFT FOR REVIEW — NOT ATTORNEY-APPROVED
+  merchantServicesContent: `Master Merchant Services Agreement — Version 2.0 (dated September 11, 2026)
 
-This draft Master Merchant Services Agreement is provided so Sixth Front merchants can review the current standard operating terms before creating a storefront. Attorney-approved terms will replace this draft in a future version.
+These are the current attorney-approved standard operating terms that apply when a Sixth Front merchant creates a storefront. This on-screen summary reflects the Master Merchant Services Agreement, Version 2.0 (dated September 11, 2026).
 
 1. Services. Sixth Front will create and support the digital storefront services selected during signup. Availability, launch timing, and third-party services may depend on the merchant supplying complete and accurate business information.
 
@@ -59,20 +60,20 @@ This draft Master Merchant Services Agreement is provided so Sixth Front merchan
 
 3. Payment processing. Card payments will be processed by an independent payment processor under that processor's terms. Processor fees are deducted by the processor. Funds settle directly to the merchant's connected account, subject to the processor's review, holds, and payout schedule.
 
-4. Sixth Front fees. Sixth Front may deduct the commissions and recurring fees shown in the accepted Pricing Schedule. Sixth Front's commission and the payment processor's disclosed fee are the only transaction-based costs stated in these standard terms.
+4. Sixth Front fees. Sixth Front may deduct the commissions and recurring fees shown in the accepted Pricing Schedule. There is no setup fee. Sixth Front's commission and the payment processor's disclosed fee are the only transaction-based costs stated in these standard terms.
 
 5. Term and cancellation. Standard service is month-to-month unless a signed custom agreement says otherwise. Either party may end service on written notice, subject to outstanding obligations and third-party processing requirements.
 
-6. Electronic records. By checking the acceptance box and submitting signup, the merchant confirms that it reviewed this draft agreement and the Pricing Schedule and agrees to receive records electronically.`,
+6. Electronic records. By checking the acceptance box and submitting signup, the merchant confirms that it reviewed the Master Merchant Services Agreement, Version 2.0 (dated September 11, 2026), and the Pricing Schedule, agrees to be bound by them, and agrees to receive records electronically.`,
   pricingScheduleTitle: "Pricing Schedule",
-  pricingScheduleContent: `DRAFT FOR REVIEW — NOT ATTORNEY-APPROVED
+  pricingScheduleContent: `Pricing Schedule — Master Merchant Services Agreement, Version 2.0 (dated September 11, 2026)
 
-The service selection submitted with signup controls which of the following standard prices apply:
+There is no setup fee. The service selection submitted with signup controls which of the following standard prices apply:
 
-• Branded Food Ordering: 8% per processed food order, plus the card processor's standard fee.
-• Branded Merch Ordering: 12% per merchandise sale, plus the card processor's standard fee.
-• Food + Merch Bundle: 8% on processed food orders and 12% on merchandise sales, plus the card processor's standard fee on each applicable transaction.
-• Custom Landing Page: $39 per month. No ordering is included.
+• Branded Food Ordering: 8% per processed food order, plus the card processor's standard fee. No setup fee.
+• Branded Merch Ordering: 12% per merchandise sale, plus the card processor's standard fee. No setup fee.
+• Food + Merch Bundle: 8% on processed food orders and 12% on merchandise sales, plus the card processor's standard fee on each applicable transaction. No setup fee.
+• Custom Landing Page: $39 per month. No ordering is included. No setup fee. This custom web page is included free when bundled with Branded Food Ordering, Branded Merch Ordering, or the Food + Merch Bundle.
 
 The card processor's current standard fee is 2.9% + 30¢ per card transaction. Processor pricing and settlement are governed by the processor's terms and may change if the processor updates them.`,
 } as const;
@@ -565,9 +566,33 @@ export const submitSignupCode = async (
   };
 };
 
+export type AcceptanceContext = {
+  userAgent?: string | null;
+  sessionId?: string | null;
+};
+
+/**
+ * SHA-256 hex digest of the exact agreement document that was displayed and accepted.
+ * The digest covers both the Merchant Services section and the Pricing Schedule so a
+ * change to either produces a different hash in the acceptance audit log.
+ */
+const hashAgreementDocument = (agreement: AgreementBundle) =>
+  createHash("sha256")
+    .update(
+      JSON.stringify({
+        version: agreement.version,
+        merchantServicesTitle: agreement.merchantServicesTitle,
+        merchantServicesContent: agreement.merchantServicesContent,
+        pricingScheduleTitle: agreement.pricingScheduleTitle,
+        pricingScheduleContent: agreement.pricingScheduleContent,
+      }),
+    )
+    .digest("hex");
+
 export const submitStandard = async (
   input: StandardSignupInput,
   ipAddress: string,
+  context: AcceptanceContext = {},
 ): Promise<IntakeResult> => {
   if (input.accepted !== true) {
     throw new Error("Agreement acceptance is required");
@@ -662,6 +687,18 @@ export const submitStandard = async (
       if (!merchant) {
         throw new Error("Merchant record could not be created");
       }
+
+      // Append-only, tamper-evident acceptance audit log (Phase 1 compliance).
+      await tx.insert(acceptanceAuditLogsTable).values({
+        merchantId: merchant.id,
+        documentType: "master_merchant_services_agreement",
+        documentVersion: agreement.version,
+        documentHash: hashAgreementDocument(agreement),
+        acceptanceTimestampUtc: acceptance.acceptedAt,
+        ipAddress,
+        userAgent: context.userAgent ?? null,
+        sessionId: context.sessionId ?? null,
+      });
 
       const [submission] = await tx
         .insert(intakeSubmissionsTable)
