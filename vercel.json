@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @workspace/sixth-front build",
+  "outputDirectory": "artifacts/sixth-front/dist/public",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null,
+  "build": {
+    "env": {
+      "PORT": "3000",
+      "BASE_PATH": "/"
+    }
+  },
+  "functions": {
+    "api/index.ts": {
+      "runtime": "@vercel/node@5.1.9"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

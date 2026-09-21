@@ -1,0 +1,79 @@
+PRIVACY POLICY
+Last updated: September 4, 2026
+
+1. Overview
+This Privacy Policy explains how Sixth Front Operations LLC and its affiliates ("Sixth Front," "we," "us," or "our") collect, use, disclose, and protect information through Sixth Front websites,lead forms, merchant onboarding flows, preview request forms, restaurant-branded ordering pages, QR/table ordering pages, merchandise storefronts, checkout flows, support channels, and related online services that link to this Privacy Policy (collectively,the "Services").
+2. Merchant Role
+When you place an order from a participating restaurant, cafe, food truck, vendor, or other business (the "Merchant"), the Merchant is the seller of record and may collect, receive, use, and retain customer information for its own business purposes, including order fulfillment, customer service, refunds, taxes, legal compliance, marketing if permitted, and business records. Merchant privacy practices may be described in the Merchant’s own privacy notice or checkout disclosures.
+3.
+
+Information We Collect
+Depending on how you use the Services, we and our service providers may collect the following categories of information:
+Contact and identity information, such as name, business name, email address, phone number, mailing address, restaurant or business information, and authorized representative information.
+Order and transaction information, such as menu items, products, order history, pickup details, table or QR identifiers, shipping details for merchandise, refund information, tips, taxes, fees, and receipt details.
+Payment-related information processed through Stripe or another payment provider, such as payment method details, transaction identifiers, fraud/risk signals, chargeback and refund data, and Stripe account or checkout information.
+
+We generally do not receive full card numbers.
+Merchant onboarding and preview information, such as business location, menu/product details, venue type, estimated online volume, requested services, reference codes, POS information, vendor information, website preferences, and support details.
+Device, browser, and usage information, such as IP address, device identifiers, browser type, operating system, pages viewed, referring pages, date/time stamps, session activity, cookies, local storage, and similar technical information.
+Communications information, such as support requests, emails, text messages, call notes, chat messages, survey responses, form submissions, consent records, opt-out records, and related communications.
+Content submitted through the Services, such as menus, images, logos, product artwork, business descriptions, customer notes, special instructions, and uploaded materials.
+4. How We Collect Information
+We collect information directly from you, from Merchants, through checkout and signup forms, through QR/table ordering flows, through support and communications channels, through cookies and similar technologies, and from service providers such as Stripe, Resto Labs, WooCommerce/WordPress, Hostinger, Cloudflare, Printful oranother POD provider, Order Desk, Pipedream, email/SMS providers, analytics providers, and support tools.
+5.
+
+How We Use Information
+We may use information to:
+Provide, configure, operate, support, secure, troubleshoot, and improve the Services.
+Process orders, payments, refunds, receipts, pickup notices, merchandise fulfillment, and support requests.
+Route information to the applicable Merchant, payment provider, ordering provider, fulfillment provider, support provider, or internal support/ticketing system.
+Create merchant previews, onboarding records, account records, order records, legal acceptance records, audit trails, and operational records.
+Communicate about orders, receipts, service notices, support matters, merchant onboarding, security, account administration, legal notices, and policy updates.
+Analyze performance, usage, errors, security, fraud, support needs, and service quality.
+Enforce agreements, protect rights, prevent fraud, comply with law, respond to legal requests, and maintain businessrecords.
+Send promotional communications only where permitted and with required consent or opt-out rights.
+6.
+
+How We Disclose Information
+We may disclose information to the following categories of recipients:
+Participating Merchants, so they can fulfillorders, provide customer service, process refunds, manage their business, comply with law, and communicate with customers.
+Payment providers such as Stripe, to process payments, refunds, disputes, risk checks, identity checks, and related payment services.
+Ordering and technology providers such as Resto Labs, WooCommerce/WordPress, or other providers used to operate menu, ordering, checkout, QR/table ordering, and related platform functions.
+Print-on-demand, fulfillment, shipping, and merchandise providers,including Printful or another selected provider, if merchandise ordering is enabled.
+Hosting, DNS, domain, security, CDN, email, SMS, analytics, support, automation, and infrastructure providers, including providers such as Hostinger, Cloudflare, Order Desk, Pipedream, and Freshdesk where used.
+Professional advisers, insurers, auditors, payment networks, banks, regulators, law enforcement, courts, or other parties where necessary for legal, compliance, risk, fraud-prevention, security, or enforcement purposes.
+Successors or transaction parties in connection with a merger, financing, reorganization, sale of assets, transfer of merchant portfolio, or similar business transaction.
+7. Stripe and Payment Processing
+Payments are processed by Stripe or another disclosed payment provider.
+
+The intended Stripe Connect structure uses Stripe connected accounts configured through Stripe Connect, with Stripe-hosted onboarding or dashboard functionality where applicable. Stripe may collect and process personal informationas described in Stripe’s own privacy disclosures. When you transact with a Merchant that uses Stripe, Stripe may refer to you as an end customer. You should review Stripe’s privacy information for details about Stripe’s processing, retention, fraud prevention, legal compliance, and rights processes.
+8. Cookies, Analytics, and Tracking
+We and our service providers may use cookies, pixels, tags, log files, software development kits, local storage, and similar technologies to operate the Services, remember preferences, secure checkout, maintain carts and sessions, route orders, measure performance, diagnose errors, prevent fraud, and understand usage. At launch, the Services are intended to use only essential and vendor-provided operational cookies and analytics. Non-essential analytics,advertising pixels, retargeting, session replay, heatmap tools, loyalty tracking, or similar technologies should not be enabled unless disclosed in this Privacy Policy and supported by any required consent or opt-out mechanism.
+9. Loyalty Programs and Saved Profiles
+No loyalty program, saved customer profile, or marketing profile is assumed to be enabled at launch.
+
+If these features are later enabled, we or the applicable Merchant may collect and use additional information such as account credentials, loyalty identifiers, saved preferences, order history, reward activity, profile information, marketing preferences, and consent records. The Privacy Policy and applicable checkout or account notices should be updated before those features are launched.
+10. Promotional Communications
+Transactional communications may include receipts, order confirmations, pickup updates, refund notices, account notices, service notices, and support messages. Promotional emails or texts, such as discounts, abandoned-cart messages, loyalty offers, restaurant promotions, or reactivation campaigns, are not assumed to be enabled at launch and will be used only if enabled and permitted by law. You may opt out of promotional emails by using the unsubscribe instructions in the message. You may opt out of marketing texts by replying STOP where supported.
+11. Data Retention
+We retain information for as long as reasonably necessary to provide the Services, support Merchants, process transactions, maintain legal andfinancial records, preserve acceptance/audit records, resolve disputes, prevent fraud, comply with law, and enforce agreements. Retention periods may vary based on Merchant needs, vendor capabilities, Stripe or payment requirements, legal requirements, andoperational needs.
+12. Security
+We use reasonable administrative, technical, and organizational safeguards designed to protect information.
+
+No website, checkout flow, payment system, transmission, storage system, or vendor service can be guaranteed to becompletely secure.
+13. Your Choices
+Depending on your relationship with us and applicable law, you may request access, correction, deletion, or other rights regarding personal information. Some requests may need to be directed to the applicable Merchant, Stripe, Resto Labs, Printful, or another service provider. To submit a request to Sixth Front, contact privacy@sixthfront.com. We may verify your request before responding.
+14. California and Other State Privacy Notices
+If required by applicable law,additional state-specific privacy rights may apply, such as rights to know, access, correct, delete, or opt out of certain uses or disclosures of personal information. Sixth Front does not sell personal information for money. The current launch assumptionis that Sixth Front does not engage in cross-context behavioral advertising or "sharing" of personal information as those terms may be defined under certain state laws unless advertising pixels, retargeting, or similar tools are later enabled. If such tools are enabled, additional disclosures and opt-out mechanisms may be required.
+15. Do Not Track and Global Privacy Controls
+Some browsers send "Do Not Track" signals or other privacy preference signals. Because standards and legal requirements vary, the Services do not currently respond to all such signals unless a specific legal requirementapplies and the relevant technology has been implemented.
+
+If advertising or cross-context tracking is enabled, additional disclosures and choices may be required.
+16. Children
+The Services are not directed to children under 13, and we do not knowingly collect personal information from children under 13. If you believe a child provided personal information through the Services, contact us so we can review and respondappropriately.
+17. International Users
+The Services are intended for use in the United States unless otherwise stated. If you access the Services from outside the United States, your information may be processed in the United States and other jurisdictionswhere our service providers operate.
+18. Changes to This Privacy Policy
+We may update this Privacy Policy from time to time. The updated version will be posted with a new "Last updated" date. Material changes will be communicated as required by applicablelaw.
+19. Contact
+Questions or requests about this Privacy Policy may be sent to privacy@sixthfront.com. General platform or merchant-facing support may be sent to support@sixthfront.com. Formal legal notices should be sent to Sixth Front Operations LLC, 5900 Balcones Drive STE 100, Austin, TX 78731 USA, or any updated notice address provided by Sixth Front.

@@ -67,6 +67,37 @@ export const agreementAcceptancesTable = pgTable("agreement_acceptances", {
   fullFormPayload: jsonb("full_form_payload").notNull(),
 });
 
+/**
+ * acceptance_audit_logs — append-only (INSERT-only) evidentiary log of every legal
+ * document acceptance, per the Phase 1 compliance requirement.
+ *
+ * This table is deliberately narrow and immutable: it stores the exact document
+ * version and a SHA-256 hash of the document body that was displayed and accepted,
+ * together with the client context (IP, user agent, session id) captured at the
+ * moment of acceptance. It complements `agreement_acceptances` (which stores full
+ * form/payload snapshots) and is intended to be the tamper-evident record of record.
+ *
+ * INSERT-only enforcement: UPDATE and DELETE are blocked at the database level by
+ * the trigger defined in `lib/db/sql/acceptance_audit_logs_insert_only.sql`, which
+ * must be applied after `drizzle-kit push` (drizzle-kit does not manage triggers).
+ */
+export const acceptanceAuditLogsTable = pgTable("acceptance_audit_logs", {
+  recordId: uuid("record_id").primaryKey().defaultRandom(),
+  merchantId: uuid("merchant_id"),
+  documentType: text("document_type").notNull(),
+  documentVersion: text("document_version").notNull(),
+  // SHA-256 hex digest of the exact document body that was displayed and accepted.
+  documentHash: text("document_hash").notNull(),
+  acceptanceTimestampUtc: timestamp("acceptance_timestamp_utc", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  sessionId: text("session_id"),
+});
+
 export const merchantsTable = pgTable("merchants", {
   id: uuid("id").primaryKey().defaultRandom(),
   ownerName: text("owner_name").notNull(),
@@ -179,6 +210,14 @@ export type InsertAgreementAcceptance = z.infer<
   typeof insertAgreementAcceptanceSchema
 >;
 export type AgreementAcceptance = typeof agreementAcceptancesTable.$inferSelect;
+
+export const insertAcceptanceAuditLogSchema = createInsertSchema(
+  acceptanceAuditLogsTable,
+).omit({ recordId: true, acceptanceTimestampUtc: true });
+export type InsertAcceptanceAuditLog = z.infer<
+  typeof insertAcceptanceAuditLogSchema
+>;
+export type AcceptanceAuditLog = typeof acceptanceAuditLogsTable.$inferSelect;
 
 export const insertMerchantSchema = createInsertSchema(merchantsTable).omit({
   id: true,
