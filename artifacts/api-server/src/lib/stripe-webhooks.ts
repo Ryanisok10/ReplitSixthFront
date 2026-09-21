@@ -5,6 +5,7 @@ import {
   syncLegacyMerchantAccount,
   syncMerchantAccount,
 } from "./merchant-onboarding";
+import { handlePaymentIntentWebhook } from "./order-service";
 
 export const STRIPE_V2_WEBHOOK_EVENTS = [
   "v2.core.account.created",
@@ -94,6 +95,8 @@ export async function processStripeWebhook(payload: Buffer, signature: string) {
       id: event.id,
       created: event.created,
     });
+  } else if (event.type.startsWith("payment_intent.")) {
+    await handlePaymentIntentWebhook(event);
   }
 }
 
