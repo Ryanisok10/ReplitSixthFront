@@ -1,6 +1,6 @@
-# [Project name]
+# Sixth Front
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Sixth Front helps restaurants launch online ordering, merchandise stores, and custom storefronts.
 
 ## Run & Operate
 
@@ -10,6 +10,9 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Optional secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_V2_WEBHOOK_SECRET`
+- Stripe features are disabled when these secrets are absent, allowing the public site and API health checks to run. Use separate Stripe sandbox secrets for development and live-mode secrets for production; add them through Replit Secrets, never source control or chat.
+- `STRIPE_WEBHOOK_SECRET` signs the legacy `/api/stripe/webhook` endpoint. `STRIPE_V2_WEBHOOK_SECRET` signs the Accounts v2 `/api/stripe/v2/webhook` endpoint.
 
 ## Stack
 
@@ -39,6 +42,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 ## Gotchas
 
 _Populate as you build — sharp edges, "always run X before Y" rules._
+
+- The API uses direct Stripe secrets and does not read the Replit Stripe connector environment. If publishing still displays the Integrated Payments claim gate after the secrets are configured, detach the old Stripe integration from the project before publishing.
 
 ## Pointers
 

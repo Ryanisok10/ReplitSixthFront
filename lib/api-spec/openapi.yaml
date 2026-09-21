@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: merchant-intake
+    description: Merchant lead and signup intake
 paths:
   /healthz:
     get:
@@ -24,6 +26,150 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /merchant-intake/agreement:
+    get:
+      operationId: getMerchantAgreement
+      tags: [merchant-intake]
+      summary: Get the active merchant agreement bundle
+      responses:
+        "200":
+          description: Active agreement bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementBundle"
+  /merchant-intake/preview:
+    post:
+      operationId: submitPreviewLead
+      tags: [merchant-intake]
+      summary: Submit a storefront preview request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreviewLeadInput"
+      responses:
+        "201":
+          description: Preview request stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntakeResult"
+        "400":
+          description: Invalid preview request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Submission key reused with different information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /merchant-intake/signup/reference-code:
+    post:
+      operationId: submitSignupReferenceCode
+      tags: [merchant-intake]
+      summary: Validate a signup reference code and create a custom lead when valid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupReferenceCodeInput"
+      responses:
+        "200":
+          description: Code validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntakeResult"
+        "400":
+          description: Invalid signup request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Submission key reused with different information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /merchant-intake/signup/standard:
+    post:
+      operationId: submitStandardSignup
+      tags: [merchant-intake]
+      summary: Submit standard merchant signup and agreement acceptance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StandardSignupInput"
+      responses:
+        "201":
+          description: Standard signup stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntakeResult"
+        "400":
+          description: Invalid signup or agreement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Submission key reused with different information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Merchant saved but payment onboarding could not be started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /merchant-onboarding/status:
+    post:
+      operationId: checkMerchantOnboardingStatus
+      tags: [merchant-intake]
+      summary: Get verified Stripe onboarding status for a merchant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MerchantOnboardingAccess"
+      responses:
+        "200":
+          description: Current onboarding status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MerchantOnboardingStatus"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid onboarding access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Merchant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +179,238 @@ components:
           type: string
       required:
         - status
+    MerchantService:
+      type: string
+      enum: [food, merch, bundle, landing]
+    BusinessBasics:
+      type: object
+      required:
+        - ownerName
+        - email
+        - phone
+        - businessName
+        - address
+        - websiteType
+        - monthlyOrderVolume
+      properties:
+        ownerName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 32
+        businessName:
+          type: string
+          minLength: 1
+          maxLength: 180
+        address:
+          type: string
+          minLength: 5
+          maxLength: 300
+        websiteType:
+          type: string
+          minLength: 1
+          maxLength: 80
+        monthlyOrderVolume:
+          type: string
+          minLength: 1
+          maxLength: 80
+    PreviewLeadInput:
+      type: object
+      required:
+        - idempotencyKey
+        - businessName
+        - ownerName
+        - email
+        - phone
+        - services
+      properties:
+        idempotencyKey:
+          type: string
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        businessName:
+          type: string
+          minLength: 1
+          maxLength: 180
+        ownerName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 32
+        venueType:
+          type: ["string", "null"]
+          maxLength: 100
+        dailyOrderVolume:
+          type: ["string", "null"]
+          maxLength: 80
+        services:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/MerchantService"
+        comments:
+          type: ["string", "null"]
+          maxLength: 2000
+        referenceCode:
+          type: ["string", "null"]
+          maxLength: 64
+    SignupReferenceCodeInput:
+      type: object
+      required: [idempotencyKey, basics, services, referenceCode]
+      properties:
+        idempotencyKey:
+          type: string
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        basics:
+          $ref: "#/components/schemas/BusinessBasics"
+        services:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/MerchantService"
+        referenceCode:
+          type: string
+          minLength: 1
+          maxLength: 64
+    StandardSignupInput:
+      type: object
+      required:
+        - idempotencyKey
+        - basics
+        - services
+        - agreementVersion
+        - accepted
+      properties:
+        idempotencyKey:
+          type: string
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        basics:
+          $ref: "#/components/schemas/BusinessBasics"
+        services:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/MerchantService"
+        agreementVersion:
+          type: string
+          minLength: 1
+          maxLength: 80
+        accepted:
+          type: boolean
+    AgreementBundle:
+      type: object
+      required:
+        - version
+        - isDraft
+        - merchantServicesTitle
+        - merchantServicesContent
+        - pricingScheduleTitle
+        - pricingScheduleContent
+      properties:
+        version:
+          type: string
+        isDraft:
+          type: boolean
+        merchantServicesTitle:
+          type: string
+        merchantServicesContent:
+          type: string
+        pricingScheduleTitle:
+          type: string
+        pricingScheduleContent:
+          type: string
+    IntakeResult:
+      type: object
+      required:
+        - outcome
+        - status
+        - message
+        - codeStatus
+      properties:
+        outcome:
+          type: string
+          enum: [standard, custom_deal]
+        status:
+          type: string
+          enum:
+            - preview_received
+            - awaiting_signature
+            - awaiting_payment_setup
+            - continue_standard
+        message:
+          type: string
+        codeStatus:
+          type: string
+          enum: [none, valid, invalid, expired, mismatched]
+        submissionId:
+          type: ["string", "null"]
+        merchantId:
+          type: ["string", "null"]
+        onboardingUrl:
+          type: ["string", "null"]
+        onboardingStatus:
+          type: ["string", "null"]
+        emailDelivery:
+          type: ["string", "null"]
+          enum: [sent, configuration_required, failed, null]
+    MerchantOnboardingStatus:
+      type: object
+      required:
+        - merchantId
+        - status
+        - detailsSubmitted
+        - chargesEnabled
+        - payoutsEnabled
+        - capabilitiesReady
+        - message
+      properties:
+        merchantId:
+          type: string
+        status:
+          type: string
+        detailsSubmitted:
+          type: boolean
+        chargesEnabled:
+          type: boolean
+        payoutsEnabled:
+          type: boolean
+        capabilitiesReady:
+          type: boolean
+        message:
+          type: string
+        onboardingUrl:
+          type: ["string", "null"]
+    MerchantOnboardingAccess:
+      type: object
+      required: [merchantId, token]
+      properties:
+        merchantId:
+          type: string
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        token:
+          type: string
+          minLength: 32
+          maxLength: 200
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
 
