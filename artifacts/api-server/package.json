@@ -8,6 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "node --import tsx --test test/mcp.test.ts",
+    "seed:agreement": "tsx ./src/scripts/seed-agreement.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
