@@ -10,11 +10,6 @@ import NotFound from '@/pages/not-found';
 import Signup from '@/pages/signup';
 import PaymentOnboardingReturn from '@/pages/payment-onboarding';
 import { ReferenceCode } from '@/components/reference-code';
-import { LegalFooter } from '@/components/legal-footer';
-import PrivacyPolicyPage from '@/pages/legal/privacy';
-import WebsiteTermsPage from '@/pages/legal/terms';
-import CookieNoticePage from '@/pages/legal/cookies';
-import SmsEmailTermsPage from '@/pages/legal/sms-terms';
 import { useSubmitPreviewLead } from '@workspace/api-client-react';
 import type { MerchantService } from '@workspace/api-client-react';
 
@@ -479,14 +474,6 @@ export function Home() {
                   </label>
 
                   <ReferenceCode value={referenceCode} onChange={setReferenceCode} />
-                  <div className="space-y-3 pt-1">
-                    <p className="text-[13px] leading-relaxed text-muted" data-testid="notice-intake-non-binding">
-                      Submitting this form requests information or a preliminary preview only. It does not create a services agreement, require either party to proceed, reserve pricing, register or transfer any domain, or authorize launch of services. Services begin only after the applicable agreement, Order Form, payment authorization, and onboarding requirements are accepted.
-                    </p>
-                    <p className="text-[13px] leading-relaxed text-muted" data-testid="notice-intake-privacy">
-                      By submitting this form, you authorize Sixth Front to use the information provided to evaluate your request, contact you, prepare a preliminary preview, and provide related onboarding information. See our <Link href="/privacy" className="underline underline-offset-2 hover:text-ink">Privacy Policy</Link> for details.
-                    </p>
-                  </div>
                   {inlineErrorMessage && <div className="text-red text-base font-bold bg-red/10 p-3 rounded" data-testid="status-preview-error">{inlineErrorMessage}</div>}
                   <button type="submit" disabled={submitPreviewLead.isPending} data-testid="button-submit-preview" className="w-full bg-tomato hover:bg-tomato-dark text-white font-bold py-4 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-base mt-2 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2 disabled:opacity-50">
                     {submitPreviewLead.isPending ? 'Sending...' : 'Get My Free Preview'} <span aria-hidden="true">→</span>
@@ -516,7 +503,6 @@ export function Home() {
           <img src={wordmarkImage} alt="Sixth Front" className="w-[140px] h-[28px] object-contain brightness-0 invert opacity-95" />
         </a>
         <p className="text-[15px] font-medium text-white/90 tracking-wide">Digital support for independent restaurants.</p>
-        <LegalFooter variant="light" />
       </footer>
     </div>
   );
@@ -528,10 +514,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/signup" component={Signup} />
       <Route path="/payment-onboarding/return" component={PaymentOnboardingReturn} />
-      <Route path="/privacy" component={PrivacyPolicyPage} />
-      <Route path="/terms" component={WebsiteTermsPage} />
-      <Route path="/cookies" component={CookieNoticePage} />
-      <Route path="/sms-terms" component={SmsEmailTermsPage} />
       <Route component={NotFound} />
     </Switch>
   );

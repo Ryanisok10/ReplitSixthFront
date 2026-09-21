@@ -168,12 +168,7 @@ router.post(
     }
 
     try {
-      const result = await submitStandard(parsed.data, requestIp(req), {
-        userAgent: req.headers["user-agent"] ?? null,
-        sessionId:
-          (req as { cookies?: Record<string, string> }).cookies?.sessionId ??
-          null,
-      });
+      const result = await submitStandard(parsed.data, requestIp(req));
       req.log.info(
         { submissionId: result.submissionId, merchantId: result.merchantId },
         "Stored standard merchant signup",
