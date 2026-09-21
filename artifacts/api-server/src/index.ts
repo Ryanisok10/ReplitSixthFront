@@ -5,6 +5,11 @@ import { getStripeSync } from "./lib/stripe-client";
 import type Stripe from "stripe";
 import { refreshIncompleteMerchantAccounts } from "./lib/merchant-onboarding";
 import { ensureStripeV2EventDestination } from "./lib/stripe-webhooks";
+import {
+  applyDatabaseConstraints,
+  bootEnsureAgreement,
+  setupStripeV2Destination,
+} from "./lib/boot-ensure";
 
 const rawPort = process.env["PORT"];
 
@@ -19,6 +24,13 @@ const port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
+
+// ── Boot sequence ──────────────────────────────────────────────────────────
+// 1. Ensure MSA v2.0 is the single active agreement (deactivates DRAFT).
+// 2. Apply INSERT-only DB triggers on acceptance_audit_logs.
+// 3. Initialize Stripe (runs migrations, creates/verifies v2 event destination).
+await bootEnsureAgreement();
+await applyDatabaseConstraints();
 
 async function initializeStripe() {
   if (!process.env.STRIPE_SECRET_KEY?.trim()) {
@@ -60,6 +72,8 @@ async function initializeStripe() {
     () => logger.info("Stripe backfill completed"),
     (err) => logger.error({ err }, "Stripe backfill failed"),
   );
+  // Ensure the Stripe v2 event destination exists; creates it if missing.
+  await setupStripeV2Destination(domain);
   return true;
 }
 
