@@ -1,0 +1,121 @@
+Based on the Stripe documentation, I can provide precise answers to your Accounts v2 Connect questions:
+
+1. Platform Activation Requirement
+account_create_activation_required is an absolute platform-level requirement. According to the documentation:
+
+"To try this integration, you must use a Sandbox. You can't use test mode."
+
+"Onboard your platform to Connect: Set up your Stripe account as a Connect platform by following the onboarding process in your Dashboard."
+
+There is no supported test-only method that avoids platform activation for Accounts v2 connected account creation.
+
+https://docs.stripe.com/connect/integrate-billing-connect
+
+2. Sandbox vs Test Mode
+Stripe provides Sandboxes (not test mode) for Accounts v2 testing:
+
+General Sandboxes: Isolated test environments separate from your live account
+Test Mode Sandbox: Your account's built-in test environment (shares some settings with live mode)
+No special test fixtures or pre-created connected account IDs are provided for Accounts v2
+The documentation explicitly states: "You can't use test mode" for Accounts v2 integrations. You must use a Sandbox AND complete platform onboarding.
+
+https://docs.stripe.com/sandboxes https://docs.stripe.com/connect/testing
+
+3. API Key Types
+No alternative key type bypasses the activation requirement. All key types authenticate as your platform account:
+
+Secret key (sk_test_...): Authenticates as your platform account
+Publishable key (pk_test_...): Client-side key, still tied to your platform
+Restricted keys: Limited-permission versions of secret keys, still platform-scoped
+Connected account keys: Only exist AFTER you create a connected account
+None of these change the platform activation requirement.
+
+https://docs.stripe.com/keys
+
+4. Using Existing Test Connected Accounts
+Yes, if you have an existing test connected account, you can test against it without creating new ones:
+
+Supported API calls:
+
+Retrieve account status: GET /v2/core/accounts/{account_id} with include parameter for requirements
+Direct charges: Create PaymentIntents on the connected account (see #5 below)
+Onboarding status: Check requirements.summary.minimum_deadline.status
+# Retrieve account with requirements
+curl https://api.stripe.com/v2/core/accounts/acct_xxx \
+  -u sk_test_xxx: \
+  -H "Stripe-Version: 2026-08-26.preview" \
+  -d "include[]=requirements"
+https://docs.stripe.com/api/v2/core/accounts/object
+
+5. Accounts v2 Direct Charge Flow
+Exact flow for Accounts v2 direct charges:
+
+Which account owns the PaymentIntent:
+
+The connected account owns the PaymentIntent
+Required headers/context:
+
+Use Stripe-Account: acct_xxx header to create the PaymentIntent on the connected account
+Application fees:
+
+Set application_fee_amount parameter (in smallest currency unit)
+Fees are represented as separate ApplicationFee objects
+on_behalf_of vs transfer_data:
+
+Direct charges do NOT use on_behalf_of or transfer_data
+Those parameters are for destination charges and separate charges/transfers (indirect charge types)
+Accounts v2-specific aspects:
+
+Must set defaults.responsibilities.fees_collector when creating the account
+If fees_collector=application, your platform pays Stripe fees
+If fees_collector=stripe, connected account pays Stripe fees directly
+Example direct charge:
+
+curl https://api.stripe.com/v1/payment_intents \
+  -u sk_test_xxx: \
+  -H "Stripe-Account: acct_xxx" \
+  -d amount=1000 \
+  -d currency=usd \
+  -d application_fee_amount=100 \
+  -d payment_method=pm_xxx \
+  -d confirm=true
+https://docs.stripe.com/connect/direct-charges https://docs.stripe.com/connect/saas/tasks/app-fees
+
+6. Replaying Accounts v2 Events
+No, Stripe cannot generate or replay realistic Accounts v2 account events for existing accounts without actual state changes.
+
+However, you can:
+
+Use test clocks for time-based events (subscriptions, trials)
+Trigger real events by making actual API changes to the test account
+Listen to webhook events via Event Destinations in your sandbox
+https://docs.stripe.com/connect/webhooks
+
+7. Minimum Platform Activation
+Minimum required:
+
+Complete platform onboarding in Dashboard: https://dashboard.stripe.com/connect
+Configure platform settings (charge type, dashboard access preferences)
+This affects both connected account creation AND charges
+What it affects:
+
+Connected account creation: Blocked entirely without activation
+Direct charges on existing accounts: Should work if account already exists, but platform must still be activated to manage the relationship
+https://docs.stripe.com/connect/interactive-platform-guide
+
+8. Clear Distinctions
+Scenario	Status
+Create new Accounts v2 connected accounts	❌ Impossible without platform activation
+Test direct charges on existing test connected account	✅ Supported (if account already exists)
+Test onboarding/status retrieval on existing account	✅ Supported via API calls
+Replay/mock Accounts v2 events without changes	❌ Not supported (must trigger real changes)
+Use test mode instead of Sandbox	❌ Not supported for Accounts v2
+Skip platform activation entirely	❌ Impossible
+Recommendation
+Since you already have test-mode API keys working and can verify webhook signatures, your best path forward is:
+
+Create a Sandbox (not test mode): https://dashboard.stripe.com/sandboxes
+Complete minimal platform onboarding in that Sandbox
+Create one test connected account to use for all testing
+Test direct charges, onboarding flows, and events against that single account
+This gives you a complete test environment without affecting any live configuration.

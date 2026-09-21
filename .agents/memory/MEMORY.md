@@ -1,0 +1,5 @@
+- [Sixth Front build environment](sixth-front-build-environment.md) — direct Vite builds require both PORT and BASE_PATH in this workspace.
+- [Checkbox focus visibility](checkbox-focus-visibility.md) — prefer directly focusable native controls when automated visual checks must confirm keyboard focus.
+- [Stripe test account activation](stripe-test-account-activation.md) — Accounts v2 connected-account creation requires Stripe test-mode platform activation even when API and webhook secrets are valid.
+- [GitHub push authentication](github-git-provider.md) — a healthy GitHub API connection can coexist with a workspace Git CLI that lacks a usable Git push credential.
+- [MCP streamable HTTP clients](mcp-streamable-http-client.md) — initialize requests must advertise both JSON and event-stream response types.

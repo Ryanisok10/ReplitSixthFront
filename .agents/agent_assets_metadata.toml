@@ -1,0 +1,72 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "JXCT73f0G6xYJFpD5kb0v"
+uri = "file://attached_assets/sixth-front-merch-banner.png"
+type = "image"
+title = "Sixth Front merch banner"
+description = "Sharper wide merchandise banner featuring branded tees, caps, two mugs, and a canvas tote."
+logical_id = "14055534-817f-45c9-8750-97b82873f631"
+content_hash = "sha256:02ea83891213560252037af0cdf36dc3a5f4e22eb98b968f2ec28ffb710e2629"
+size = 602471
+mtime_ms = 1788050005144
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:44827737-5af5-4ff5-a194-ff7c78e2ec04/14055534-817f-45c9-8750-97b82873f631/2f85636d-81ae-4a8a-9172-e78179f5e78b"
+storage_version_token = "1788050074280093"
+content_type = "image/png"
+
+[[outputs]]
+id = "MvA9rQ-kBTMyoq7SwTw1X"
+uri = "file://attached_assets/sixth-front-merch-banner-relaxed.png"
+type = "image"
+title = "Sixth Front merch banner with relaxed crop"
+description = "The updated wide banner with extra breathing room above the shirts, caps, mugs, and tote."
+logical_id = "da569ebe-bd1c-42cf-a119-de80cd32b9c4"
+content_hash = "sha256:7ddf6895e15f5728d9b2a8e00adef903197f1a6a2daedf22af9ab20be57c54ec"
+size = 546724
+mtime_ms = 1788050301016
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:44827737-5af5-4ff5-a194-ff7c78e2ec04/da569ebe-bd1c-42cf-a119-de80cd32b9c4/1b7b3a49-10bb-40e6-817a-a43bd94a6d10"
+storage_version_token = "1788050351660695"
+content_type = "image/png"
+
+[[outputs]]
+id = "jtKVMu2T1DxFketUV7f-T"
+uri = "file://attached_assets/sixth-front-order-banner-realistic.png"
+type = "image"
+title = "Sixth Front realistic ordering banner"
+description = "Sharper, more realistic wide banner showing QR table ordering, a restaurant meal, and the phone ordering experience."
+logical_id = "3b8cee34-829c-4abb-af08-79c17c7b0d59"
+content_hash = "sha256:7210ae4d3ca7655d37b45ce6bf357d02289837869763db99100753bd00f40978"
+size = 1032066
+mtime_ms = 1788050632364
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:44827737-5af5-4ff5-a194-ff7c78e2ec04/3b8cee34-829c-4abb-af08-79c17c7b0d59/60f36cea-ab6f-42c0-ad0a-c1ae7519dd30"
+storage_version_token = "1788050682321889"
+content_type = "image/png"
+
+[[outputs]]
+id = "_dHiji9GEN6RfXBH5wT7P"
+uri = "file://attached_assets/sixth-front-hero-banner-realistic.png"
+type = "image"
+title = "Sixth Front realistic hero image"
+description = "Sharper, more realistic restaurant-owner hero banner with a readable ordering phone and warm restaurant lighting."
+logical_id = "b3e3db3b-9271-407c-8ccf-dab4490ca31b"
+content_hash = "sha256:e5708b057ff3356e496ac375b9a8223b1f6d976406109ef659a7aec189c11da5"
+size = 593651
+mtime_ms = 1788050754556
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:44827737-5af5-4ff5-a194-ff7c78e2ec04/b3e3db3b-9271-407c-8ccf-dab4490ca31b/35a1d8c9-da0c-42ab-bbd9-4a5682663557"
+storage_version_token = "1788050852263590"
+content_type = "image/png"
+
+[[outputs]]
+id = "kCty8sMLD5yj3b3oEJcUH"
+uri = "file://attached_assets/sixth-front-hero-attached.png"
+type = "image"
+title = "Sixth Front hero using attached photo"
+description = "The attached realistic man-with-phone image composed into the wide hero layout without distortion."
+logical_id = "e61e4368-56fc-49b9-bebe-a9fb19ca58e7"
+content_hash = "sha256:ea078de92e533ee8e6aa10ba1de777ab23fc53ffac77623dcb1df9daeee7cbc3"
+size = 701006
+mtime_ms = 1788054062027
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:44827737-5af5-4ff5-a194-ff7c78e2ec04/e61e4368-56fc-49b9-bebe-a9fb19ca58e7/fef755a7-e19d-4bd5-bc40-8dd061f6678d"
+storage_version_token = "1788054115235504"
+content_type = "image/png"

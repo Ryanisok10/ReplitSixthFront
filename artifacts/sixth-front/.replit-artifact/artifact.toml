@@ -1,7 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Sixth Front"
-description = "A conversion-focused marketing website for independent restaurant owners to launch and manage branded online ordering, merch storefronts, landing pages, and managed POS sync through Sixth Front."
+description = "A warm, conversion-focused restaurant services landing page inspired by the supplied reference, helping independent restaurants get online ordering, digital discovery, and branded storefronts."
 version = "1.0.0"
 id = "artifacts/sixth-front"
 router = "path"

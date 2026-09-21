@@ -1,5 +1,9 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { runMigrations } from "stripe-replit-sync";
+import { getStripeSync } from "./lib/stripe-client";
+import type Stripe from "stripe";
+import { refreshIncompleteMerchantAccounts } from "./lib/merchant-onboarding";
 
 const rawPort = process.env["PORT"];
 
@@ -13,6 +17,58 @@ const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+async function initializeStripe() {
+  if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+    logger.warn(
+      "Stripe is not configured; skipping Stripe initialization and webhook sync",
+    );
+    return false;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL;
+  const domain = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
+  if (!databaseUrl || !domain) {
+    throw new Error("DATABASE_URL and REPLIT_DOMAINS are required for Stripe");
+  }
+  await runMigrations({ databaseUrl, logger });
+  const sync = await getStripeSync();
+  const enabledEvents: Stripe.WebhookEndpointCreateParams.EnabledEvent[] = [
+    ...new Set([...sync.getSupportedEventTypes(), "account.updated" as const]),
+  ];
+  await sync.findOrCreateManagedWebhook(`https://${domain}/api/stripe/webhook`, {
+    enabled_events: enabledEvents,
+  });
+  void sync.syncBackfill().then(
+    () => logger.info("Stripe backfill completed"),
+    (err) => logger.error({ err }, "Stripe backfill failed"),
+  );
+  return true;
+}
+
+const stripeEnabled = await initializeStripe();
+
+const pollIntervalMs = Math.max(
+  60_000,
+  Number(process.env.STRIPE_ONBOARDING_POLL_INTERVAL_MS ?? 300_000),
+);
+if (stripeEnabled) {
+  const pollMerchantStatuses = () => {
+    void refreshIncompleteMerchantAccounts().then(
+      ({ refreshed, failed, skipped }) => {
+        if (refreshed > 0 || failed > 0 || skipped) {
+          logger.info(
+            { refreshed, failed, skipped },
+            "Stripe v2 onboarding poll completed",
+          );
+        }
+      },
+      (err) => logger.warn({ err }, "Stripe v2 onboarding poll failed"),
+    );
+  };
+  setTimeout(pollMerchantStatuses, 10_000);
+  setInterval(pollMerchantStatuses, pollIntervalMs);
 }
 
 app.listen(port, (err) => {

@@ -1,461 +1,529 @@
-import { type ChangeEvent, type FormEvent, type ReactNode, useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ArrowDownRight, ArrowRight, Check, ChevronDown, Coffee, Menu, MonitorSmartphone, QrCode, ShoppingBag, Store, Truck, X } from 'lucide-react';
-import { ErrorBoundary } from '@/components/error-boundary';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { FormEvent, useState } from 'react';
+import heroImage from '@assets/sixth-front-hero-attached.png';
+import orderImage from '@assets/sixth-front-order-realistic-16x9.png';
+import merchImage from '@assets/sixth-front-merch-banner-relaxed.png';
+import bundleImage from '@assets/Screenshot_2026-08-28_013635_1787897678353.png';
+import logoImage from '@assets/sixth-front-logo-icon.png';
+import wordmarkImage from '@assets/sixth-front-wordmark-transparent.png';
+import { Link, Route, Router as WouterRouter, Switch } from 'wouter';
 import NotFound from '@/pages/not-found';
-import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import Signup from '@/pages/signup';
+import PaymentOnboardingReturn from '@/pages/payment-onboarding';
+import { ReferenceCode } from '@/components/reference-code';
+import { useSubmitPreviewLead } from '@workspace/api-client-react';
+import type { MerchantService } from '@workspace/api-client-react';
 
-const queryClient = new QueryClient();
+const scrollToId = (id: string) => {
+  if (id === 'top') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
 
-const navItems = [
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Services', href: '#services' },
-  { label: 'Who it is for', href: '#who-its-for' },
-  { label: 'FAQ', href: '#faq' },
-];
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
-const faqs = [
-  {
-    question: 'Do I need to be technical to use Sixth Front?',
-    answer: 'No. We handle the build, launch, and day-to-day technology management. You provide the menu, brand details, and the food. We take care of the online ordering experience.',
-  },
-  {
-    question: 'What do I need to get started?',
-    answer: 'Your menu, a few details about your business, and access to the devices you already use. There is no special hardware to buy for our service.',
-  },
-  {
-    question: 'How does the commission plan work?',
-    answer: 'On the QR code / online food ordering plan, Sixth Front keeps 8% of each order and there is no setup fee. We only make money when you make money.',
-  },
-  {
-    question: 'Can my online ordering look like my business?',
-    answer: 'Yes. Your brand is front and center, rather than being presented alongside a marketplace full of other businesses. We build the experience around your menu and identity.',
-  },
-  {
-    question: 'What happens when I need help?',
-    answer: 'We handle support requests and coordinate with our technology partners on your behalf, so you have one clear place to bring questions about your ordering service.',
-  },
-  {
-    question: 'Can I eventually own everything outright?',
-    answer: 'A buyout option is available for merchants who want to own everything outright later. Ask us about it when we talk through your setup.',
-  },
-];
+const CtaButton = ({ onClick, children, testId, className = "" }: { onClick: () => void, children: React.ReactNode, testId?: string, className?: string }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`bg-tomato hover:bg-tomato-dark text-white font-bold py-3.5 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-[15px] tracking-wide active:shadow-none active:translate-y-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2 ${className}`}
+    data-testid={testId}
+  >
+    {children}
+  </button>
+);
 
-function BrandMark() {
+function MapIllustration() {
   return (
-    <span className="flex items-center gap-3" data-testid="brand-sixth-front">
-      <span className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[hsl(var(--accent))]">
-        <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--accent))]" />
-        <span className="absolute h-6 w-6 rounded-full border border-[hsl(var(--accent))] opacity-50" />
-      </span>
-      <span className="text-[15px] font-bold tracking-[-.03em] text-[#faf6ee]">Sixth Front</span>
-    </span>
+    <svg viewBox="0 0 52 40" role="presentation" aria-hidden="true" className="w-full h-full">
+      <path d="M4 10.5 16 5l19 5 13-5v24.5l-13 5-19-5-12 5Z" fill="#e7d8b9" stroke="#d7c39f" strokeWidth="1.2" />
+      <path d="m16 5-.2 24.5M35 10v24.5" stroke="#d2b98c" strokeWidth="1.2" />
+      <path d="M17 15.8c0-4 3.2-7.1 7.2-7.1s7.1 3.1 7.1 7.1c0 5.2-7.1 12-7.1 12s-7.2-6.8-7.2-12Z" fill="#c74426" />
+      <circle cx="24.2" cy="15.7" r="2.5" fill="#fff5e6" />
+    </svg>
   );
 }
 
-function Header({ onNavigate }: { onNavigate: () => void }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
-  const navigate = () => {
-    closeMenu();
-    onNavigate();
+function BagIllustration() {
+  return (
+    <svg viewBox="0 0 52 40" role="presentation" aria-hidden="true" className="w-full h-full">
+      <ellipse cx="26" cy="33" rx="21" ry="4.5" fill="#ead7b7" />
+      <path d="M10 13h32l-3 21H13Z" fill="#a6462b" />
+      <path d="M17 13c0-5.8 3.3-8.8 9-8.8s9 3 9 8.8" fill="none" stroke="#a6462b" strokeWidth="2.2" />
+      <path d="M23 11V3.8h6V13" fill="#d0ad78" stroke="#a6462b" strokeWidth="1.2" />
+      <path d="M15 18h22" stroke="#d67443" strokeWidth="1.3" />
+      <circle cx="26" cy="25" r="1.4" fill="#e5bd86" />
+    </svg>
+  );
+}
+
+function PhoneIllustration() {
+  return (
+    <svg viewBox="0 0 52 40" role="presentation" aria-hidden="true" className="w-full h-full">
+      <circle cx="26" cy="20" r="18" fill="#c74426" />
+      <path d="M17.2 11.5c.7-.7 1.8-.7 2.5 0l2.7 2.7c.7.7.7 1.8 0 2.5l-1.8 1.8c1.2 1.8 2.7 3.3 4.5 4.5l1.8-1.8c.7-.7 1.8-.7 2.5 0l2.7 2.7c.7.7.7 1.8 0 2.5l-1.3 1.3c-.9.9-2.3 1.3-3.5.9-5.5-1.7-10.3-6.5-12-12-.4-1.3 0-2.6.9-3.5Z" fill="#fff4e3" />
+    </svg>
+  );
+}
+
+const benefits = [
+  { title: 'Get Found Online', description: 'Attract more customers.', icon: MapIllustration },
+  { title: 'Take Orders 24/7', description: 'Beyond just walk-ins.', icon: BagIllustration },
+  { title: 'Ditch the Telephone', description: 'Fewer calls. More time where it matters.', icon: PhoneIllustration },
+];
+
+const contactBenefits = [
+  {
+    title: 'No Long-Term Commitments',
+    description: "Stay because it's working, not because you're locked in. Everything is month-to-month.",
+  },
+  {
+    title: 'Use Devices You Already Own',
+    description: 'Receive orders directly on your current phone, tablet, or PC.',
+  },
+  {
+    title: 'You Get Paid Directly',
+    description: 'Card processor fees are deducted by the processor — our commission and their fee are the only costs. Funds then settle direct to your account.',
+  },
+  {
+    title: 'Live in About a Week',
+    description: "Once you send your details, we'll have your storefront ready to review within 5–7 business days. Most go live sooner.",
+  },
+];
+
+export function Home() {
+  const [selectedServices, setSelectedServices] = useState<string[]>(['bundle']);
+  const [referenceCode, setReferenceCode] = useState('');
+  const [previewIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [successMessage, setSuccessMessage] = useState('');
+  const [inlineErrorMessage, setInlineErrorMessage] = useState('');
+  const submitPreviewLead = useSubmitPreviewLead();
+
+  const toggleService = (service: string) => {
+    setSelectedServices((currentServices) =>
+      currentServices.includes(service)
+        ? currentServices.filter((currentService) => currentService !== service)
+        : [...currentServices, service],
+    );
+  };
+
+  const handlePreviewSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setInlineErrorMessage('');
+    if (selectedServices.length === 0) {
+      setInlineErrorMessage('Please select at least one service.');
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    submitPreviewLead.mutate({
+      data: {
+        idempotencyKey: previewIdempotencyKey,
+        businessName: form.get('restaurantName') as string,
+        ownerName: form.get('name') as string,
+        email: form.get('email') as string,
+        phone: form.get('phone') as string,
+        venueType: (form.get('venueType') as string) || null,
+        dailyOrderVolume: (form.get('dailyOrderVolume') as string) || null,
+        services: selectedServices as MerchantService[],
+        comments: (form.get('comments') as string) || null,
+        referenceCode: referenceCode || null,
+      },
+    }, {
+      onSuccess: (result) => {
+        if (result.codeStatus === 'valid') {
+          setSuccessMessage("Thanks — we've got your info. Your custom agreement will be emailed to you shortly for review and signature.");
+        } else {
+          setSuccessMessage("Thanks for requesting a preview! We'll be in touch soon.");
+          if (['invalid', 'expired', 'mismatched'].includes(result.codeStatus)) {
+            setInlineErrorMessage('Code not recognized — continuing with standard signup.');
+          }
+        }
+      },
+      onError: (error) => setInlineErrorMessage(error.data?.error || 'An error occurred. Please try again.'),
+    });
   };
 
   return (
-    <header className="absolute inset-x-0 top-0 z-30">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
-        <a href="#top" onClick={navigate} data-testid="link-brand-home"><BrandMark /></a>
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
-          {navItems.map((item) => (
-            <a className="nav-link text-sm" href={item.href} onClick={navigate} key={item.href} data-testid={`link-nav-${item.label.toLowerCase().replaceAll(' ', '-')}`}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <a className="outline-button hidden rounded-full border border-white/30 px-5 py-2.5 text-sm font-semibold text-[#faf6ee] md:inline-flex" href="#contact" onClick={navigate} data-testid="link-header-get-started">
-          Get Started <ArrowRight className="ml-2 h-4 w-4" />
-        </a>
-        <button className="rounded-full border border-white/25 p-2 text-[#faf6ee] md:hidden" type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(!menuOpen)} data-testid="button-mobile-menu">
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-      {menuOpen && (
-        <div className="mobile-menu mx-4 rounded-2xl border border-white/15 bg-[#173536] p-5 shadow-2xl md:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-            {navItems.map((item) => (
-              <a className="rounded-xl px-3 py-3 text-sm text-white/80 hover:bg-white/10 hover:text-[hsl(var(--accent))]" href={item.href} onClick={navigate} key={item.href} data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(' ', '-')}`}>
-                {item.label}
-              </a>
-            ))}
-            <a className="mt-3 inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-5 py-3 text-sm font-semibold text-[#faf6ee]" href="#contact" onClick={navigate} data-testid="link-mobile-get-started">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
+    <div className="w-full max-w-[1080px] mx-auto min-h-screen bg-paper shadow-[0_0_70px_rgba(115,59,31,0.08)] flex flex-col relative font-sans text-ink overflow-x-hidden">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur border-b border-line shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 h-[68px] flex items-center justify-between gap-3">
+          <a href="#top" onClick={(e) => { e.preventDefault(); scrollToId('top'); }} className="flex items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-tomato rounded" data-testid="link-brand" aria-label="Sixth Front home">
+            <img src={logoImage} alt="" className="w-8 h-7 md:w-10 md:h-8 object-contain" aria-hidden="true" />
+            <img src={wordmarkImage} alt="Sixth Front" className="hidden md:block w-[250px] h-[52px] object-contain" />
+          </a>
+          <nav className="flex items-center gap-3 sm:gap-5 md:gap-8" aria-label="Primary navigation">
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToId('how-it-works'); }} className="text-[11px] sm:text-xs md:text-[13px] font-display font-bold uppercase tracking-wide md:tracking-wider text-ink/80 hover:text-tomato focus-visible:text-tomato transition-colors whitespace-nowrap">How It Works</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToId('pricing'); }} className="text-[11px] sm:text-xs md:text-[13px] font-display font-bold uppercase tracking-wide md:tracking-wider text-ink/80 hover:text-tomato focus-visible:text-tomato transition-colors">Pricing</a>
+            <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToId('contact'); }} className="text-[11px] sm:text-xs md:text-[13px] font-display font-bold uppercase tracking-wide md:tracking-wider text-ink/80 hover:text-tomato focus-visible:text-tomato transition-colors">Contact</a>
           </nav>
         </div>
-      )}
-    </header>
-  );
-}
+      </header>
 
-function Hero() {
-  return (
-    <section id="top" className="hero-grid relative overflow-hidden bg-[#173536] text-[#faf6ee]">
-      <div className="hero-glow" />
-      <Header onNavigate={() => undefined} />
-      <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-12 px-5 pb-20 pt-36 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-8 lg:px-12 lg:pb-24 lg:pt-40">
-        <div className="relative z-10 max-w-2xl">
-          <div className="reveal eyebrow mb-7 text-[hsl(var(--accent))]">Online ordering, with a steady hand</div>
-          <h1 className="reveal delay-1 max-w-[720px] text-[clamp(3.4rem,10vw,7.5rem)] leading-[.87] tracking-[-.065em]">
-            More orders.<br /><span className="serif font-normal italic text-[hsl(var(--accent))]">Less tech.</span>
-          </h1>
-          <p className="reveal delay-2 mt-8 max-w-lg text-lg leading-8 text-white/70 sm:text-xl">
-            Sixth Front builds and runs your branded online ordering, so you can focus on the food and the people who come back for it.
-          </p>
-          <div className="reveal delay-3 mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <a className="solid-button inline-flex items-center rounded-full bg-[hsl(var(--primary))] px-6 py-3.5 font-semibold text-[#faf6ee]" href="#contact" data-testid="link-hero-get-started">
-              Get Started <ArrowRight className="ml-3 h-4 w-4" />
-            </a>
-            <a className="inline-flex items-center px-2 py-3 text-sm font-semibold text-white/70 transition-colors hover:text-[hsl(var(--accent))]" href="#how-it-works" data-testid="link-hero-how-it-works">
-              See how it works <ArrowDownRight className="ml-2 h-4 w-4" />
-            </a>
+      <main id="top">
+        {/* Hero Section */}
+        <section className="relative max-w-5xl mx-auto px-5 md:px-8 pt-12 pb-16 md:pt-24 md:pb-24 flex flex-col md:flex-row items-center gap-10 md:gap-0 min-h-[460px]">
+          <div className="w-full md:w-1/2 relative z-10 animate-rise">
+            <h1 id="hero-title" className="text-[44px] leading-[0.95] md:text-5xl lg:text-[64px] font-display font-extrabold text-red tracking-tight mb-5">
+              <span className="block mb-1.5">Your Food.</span>
+              <span className="block mb-1.5">Your Orders.</span>
+              <span className="block text-ink">Your Next Storefront.</span>
+            </h1>
+            <p className="text-xl md:text-[22px] text-muted font-medium mb-8 max-w-sm">
+              Done-For-You Online Ordering
+            </p>
+            <Link href="/signup" data-testid="button-hero-get-started" className="inline-block bg-tomato hover:bg-tomato-dark text-white font-bold py-3.5 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-[15px] tracking-wide active:shadow-none active:translate-y-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2">
+              Get Started
+            </Link>
           </div>
-          <div className="reveal delay-3 mt-12 flex items-center gap-3 text-xs text-white/50">
-            <Check className="h-4 w-4 text-[hsl(var(--accent))]" /> Free setup and build on commission plans
+          <div className="w-full md:w-[60%] h-[260px] md:h-full md:absolute md:right-[-5%] md:top-0 animate-rise delay-200">
+            <div className="hero-restaurant-image w-full h-full bg-right-top bg-no-repeat [mask-image:linear-gradient(to_bottom,black_70%,transparent_100%)] md:[mask-image:linear-gradient(to_left,black_60%,transparent_100%)]" style={{ backgroundImage: `url(${heroImage})` }} aria-label="Restaurant owner holding a phone" role="img" data-testid="img-hero-restaurant-owner"></div>
           </div>
-        </div>
+        </section>
 
-        <div className="relative mx-auto mt-3 w-full max-w-[500px] lg:mt-10 lg:justify-self-end">
-          <div className="absolute -left-5 top-10 hidden rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur sm:block">
-            <div className="mono text-[10px] uppercase tracking-[.16em] text-[hsl(var(--accent))]">Your storefront</div>
-            <div className="mt-1 text-sm font-semibold">Your name. Your menu.</div>
+        {/* Benefits Section */}
+        <section className="bg-cream border-t border-line py-16 md:py-24" aria-labelledby="benefits-title">
+          <div className="max-w-5xl mx-auto px-5 md:px-8">
+            <div className="text-center mb-14">
+              <h2 id="benefits-title" className="text-3xl md:text-4xl font-display font-bold text-red tracking-tight mb-4">Why Go Digital?</h2>
+              <div className="w-16 h-1 bg-tomato mx-auto rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {benefits.map(({ title, description, icon: Icon }, index) => (
+                <article key={title} data-testid={`card-benefit-${index}`} className="bg-paper border border-line rounded-xl p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all text-center flex flex-col items-center">
+                  <div className="w-[58px] h-[48px] flex items-center justify-center mb-6 text-tomato">
+                    <Icon />
+                  </div>
+                  <h3 className="text-xl font-display font-bold text-red mb-2 tracking-tight">{title}</h3>
+                  <p className="text-muted text-[17px] leading-relaxed">{description}</p>
+                </article>
+              ))}
+            </div>
           </div>
-          <div className="phone-shadow mx-auto w-[260px] rotate-[4deg] rounded-[2.25rem] border-[7px] border-[#102627] bg-[#f8f2e8] p-2 sm:w-[294px]">
-            <div className="overflow-hidden rounded-[1.65rem] bg-[#f8f2e8]">
-              <div className="flex items-center justify-between bg-[#db6045] px-5 py-4 text-[#faf6ee]">
-                <div className="text-[13px] font-bold">Marlow Kitchen</div>
-                <QrCode className="h-4 w-4" />
-              </div>
-              <div className="p-4">
-                <div className="mono text-[9px] uppercase tracking-[.12em] text-[#a19a8d]">Good food, direct</div>
-                <div className="serif mt-1 text-[28px] leading-none text-[#173536]">Choose your table.</div>
-                <div className="mt-4 flex gap-2 text-[10px] font-semibold text-[#173536]">
-                  <span className="rounded-full bg-[#f0d69a] px-3 py-1.5">Popular</span>
-                  <span className="rounded-full bg-[#e8e1d5] px-3 py-1.5">Mains</span>
+        </section>
+
+        {/* Process Section */}
+        <section id="how-it-works" className="py-16 md:py-24 bg-paper" aria-labelledby="process-title">
+          <div className="max-w-5xl mx-auto px-5 md:px-8">
+            <div className="text-center mb-16">
+              <h2 id="process-title" className="text-3xl md:text-4xl font-display font-bold text-red tracking-tight mb-4">How It Works</h2>
+              <p className="text-muted font-medium text-xl">Simple setup. Powerful results.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 max-w-4xl mx-auto" aria-label="Three steps to get started">
+              <div className="flex items-start gap-4" data-testid="step-sign-up">
+                <span className="w-10 h-10 shrink-0 rounded-full bg-tomato text-white flex items-center justify-center font-display font-bold text-lg shadow-sm">1</span>
+                <div>
+                  <h3 className="text-lg font-bold text-ink mb-2 tracking-tight">Tell us about your food service.</h3>
+                  <p className="text-muted text-[17px] leading-relaxed">Send a few photos of your menu, business card, and any food photos you have.</p>
                 </div>
-                <div className="mt-4 space-y-2.5">
-                  {['Crispy chicken sandwich', 'Charred corn bowl', 'House lemonade'].map((dish, index) => (
-                    <div className="flex items-center justify-between rounded-xl border border-[#ded5c7] bg-white/50 p-3" key={dish}>
+              </div>
+              <div className="flex items-start gap-4" data-testid="step-build-everything">
+                <span className="w-10 h-10 shrink-0 rounded-full bg-tomato text-white flex items-center justify-center font-display font-bold text-lg shadow-sm">2</span>
+                <div>
+                  <h3 className="text-lg font-bold text-ink mb-2 tracking-tight">We build your storefront.</h3>
+                  <p className="text-muted text-[17px] leading-relaxed">Our experts handle the design, posting, and technical setup.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4" data-testid="step-start-orders">
+                <span className="w-10 h-10 shrink-0 rounded-full bg-tomato text-white flex items-center justify-center font-display font-bold text-lg shadow-sm">3</span>
+                <div>
+                  <h3 className="text-lg font-bold text-ink mb-2 tracking-tight">You start getting orders.</h3>
+                  <p className="text-muted text-[17px] leading-relaxed">Customers search and visit you online while you handle the food. It's that simple to go digital.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Image Bands */}
+        <section className="bg-paper pb-16 md:pb-24">
+          <div className="max-w-5xl mx-auto px-5 md:px-8 flex flex-col gap-6 md:gap-8">
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-line bg-cream">
+              <h2 id="order-title" className="sr-only">Order and pay right from the table.</h2>
+              <img
+                className="block w-full h-auto"
+                src={orderImage}
+                alt="A diner scans a table QR code beside a plated meal with the message: Order and pay right from the table."
+                data-testid="img-order-and-pay"
+              />
+            </div>
+
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-line bg-cream" aria-labelledby="merch-title">
+              <h2 id="merch-title" className="px-6 py-5 md:px-10 md:py-7 text-2xl md:text-3xl font-display font-bold text-red text-center leading-tight tracking-tight">
+                A whole new way to earn: Your <span className="text-tomato">OWN</span> branded merchandise.
+              </h2>
+              <img
+                className="block w-full h-[180px] md:h-auto object-cover object-center"
+                src={merchImage}
+                alt="Branded shirts, hats, mugs, and a canvas tote"
+                data-testid="img-merchandise"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="bg-cream py-16 md:py-24 border-y border-line" aria-labelledby="pricing-title">
+          <div className="max-w-5xl mx-auto px-5 md:px-8">
+            <div className="text-center mb-14">
+              <h2 id="pricing-title" className="text-3xl md:text-4xl font-display font-bold text-red tracking-tight mb-4">Pricing</h2>
+              <div className="w-16 h-1 bg-tomato mx-auto rounded-full"></div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+              <article className="bg-white border border-line rounded-2xl p-6 md:p-8 flex flex-col shadow-sm" data-testid="card-price-food-ordering">
+                <h3 className="text-xl font-display font-bold text-red mb-3">Food Ordering</h3>
+                <div className="flex items-baseline gap-2 mb-4 text-tomato flex-wrap">
+                  <span className="text-4xl md:text-[42px] font-display font-bold tracking-tight">8%<span className="text-[24px] leading-none">*</span></span>
+                  <span className="text-sm font-bold text-muted uppercase tracking-wide">per processed order</span>
+                </div>
+                <p className="text-muted text-base leading-relaxed mb-2">No monthly fees. Only pay when orders come in.</p>
+                <p className="text-muted text-base leading-relaxed mb-4">Perfect for taking orders online and at the table.</p>
+                <ul className="space-y-3 mb-8 text-base text-ink flex-1">
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Online pickup ordering</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> QR table ordering</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> QR Scan to Pay</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Full menu integration</li>
+                  <li className="flex gap-3 items-start font-bold"><span className="text-tomato text-base leading-none" aria-hidden="true">★</span> FREE Custom Web Page included</li>
+                </ul>
+                <Link href="/signup?service=food" data-testid="link-select-food" className="block text-center w-full bg-paper border-2 border-line hover:border-tomato hover:text-tomato text-ink font-bold py-3 px-6 rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2">
+                  Select Ordering
+                </Link>
+              </article>
+
+              <article className="bg-white border border-line rounded-2xl p-6 md:p-8 flex flex-col shadow-sm" data-testid="card-price-merch-storefront">
+                <h3 className="text-xl font-display font-bold text-red mb-3">Merch Store</h3>
+                <div className="flex items-baseline gap-2 mb-4 text-tomato flex-wrap">
+                  <span className="text-4xl md:text-[42px] font-display font-bold tracking-tight">12%<span className="text-[24px] leading-none">*</span></span>
+                  <span className="text-sm font-bold text-muted uppercase tracking-wide">per sale</span>
+                </div>
+                <p className="text-muted text-base mb-4 leading-relaxed">Unlock a new revenue stream. Sell your branded gear without buying any inventory upfront.</p>
+                <ul className="space-y-3 mb-8 text-base text-ink flex-1">
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Sell hats, shirts, mugs, and more</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> A shop built around your logo and designs</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Printing and shipping handled for you</li>
+                  <li className="flex gap-3 items-start font-bold"><span className="text-tomato text-base leading-none" aria-hidden="true">★</span> FREE Custom Web Page included</li>
+                </ul>
+                <Link href="/signup?service=merch" data-testid="link-select-merch" className="block text-center w-full bg-paper border-2 border-line hover:border-tomato hover:text-tomato text-ink font-bold py-3 px-6 rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2">
+                  Select Merch
+                </Link>
+              </article>
+
+              <article className="relative bg-[#132A38] border border-[#1d3d52] rounded-2xl p-6 md:p-8 flex flex-col shadow-xl text-paper" data-testid="card-price-bundle">
+                <span className="absolute -top-3 right-5 bg-tomato text-white text-[11px] font-bold uppercase tracking-wider py-1.5 px-3.5 rounded-full shadow-sm">Most Popular</span>
+                <h3 className="text-2xl font-display font-bold mb-4">The Bundle</h3>
+                <img src={bundleImage} alt="Sixth Front ordering phone, QR stand, and signature merchandise" className="w-full aspect-video object-cover rounded-xl mb-5" data-testid="img-bundle-offer" />
+                <div className="flex items-baseline gap-2 mb-4 text-tomato flex-wrap">
+                  <span className="text-4xl md:text-[42px] font-display font-bold tracking-tight">8%<span className="text-[24px] leading-none">*</span> + 12%<span className="text-[24px] leading-none">*</span></span>
+                  <span className="text-sm font-bold text-paper/75 uppercase tracking-wide">on respective sales</span>
+                </div>
+                <p className="text-paper/90 text-base leading-relaxed mb-2">The complete digital storefront. Food + Merch, working together seamlessly.</p>
+                <p className="text-[#FFD3A3] font-bold text-base mb-6 pb-6 border-b border-paper/15">No setup fee</p>
+                <ul className="space-y-3 mb-8 text-base text-paper/90 flex-1">
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-paper/15 text-paper flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Everything in Food Ordering</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-paper/15 text-paper flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Everything in Merch Store</li>
+                  <li className="flex gap-3 items-start font-bold"><span className="text-[#FFD3A3] text-base leading-none" aria-hidden="true">★</span> FREE Custom Web Page included</li>
+                </ul>
+                <Link href="/signup?service=bundle" data-testid="link-select-bundle" className="block text-center w-full bg-tomato hover:bg-tomato-dark text-white font-bold py-3.5 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)]">
+                  Get The Bundle
+                </Link>
+              </article>
+
+              <article className="lg:col-span-3 bg-white border border-line rounded-2xl p-6 md:p-8 flex flex-col lg:grid lg:grid-cols-[1fr_1.25fr_200px] lg:gap-10 lg:items-center shadow-sm" data-testid="card-price-landing-page">
+                <div>
+                  <h3 className="text-xl font-display font-bold text-ink mb-3">Custom Web Page Only</h3>
+                  <div className="flex items-baseline gap-1.5 mb-4 text-ink flex-wrap">
+                    <span className="text-4xl md:text-[42px] font-display font-bold tracking-tight">$39</span>
+                    <span className="text-xs font-bold text-muted uppercase tracking-wide">/month</span>
+                  </div>
+                  <p className="text-muted text-base mb-2 leading-relaxed">Just need a professional home on the internet?</p>
+                  <p className="text-muted text-base mb-2">No ordering included.</p>
+                </div>
+                <ul className="space-y-3 my-7 lg:my-0 text-base text-ink">
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-line text-muted flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Professional one-page website</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-line text-muted flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Hours, location, and directions</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-line text-muted flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Menu and photo display</li>
+                  <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-line text-muted flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Hosting included</li>
+                </ul>
+                <Link href="/signup?service=landing" data-testid="link-select-landing" className="block text-center w-full bg-paper border-2 border-line hover:border-ink hover:text-ink text-muted font-bold py-3 px-6 rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                  Select Custom Web Page
+                </Link>
+              </article>
+            </div>
+            <p className="mt-6 text-base md:text-[17px] leading-relaxed text-muted">
+              *Plus the card processor&apos;s standard fee (2.9% + 30¢), charged by the payment processor on each transaction.
+            </p>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="bg-paper py-16 md:py-24" aria-labelledby="contact-title">
+          <div className="max-w-6xl mx-auto px-5 md:px-8">
+            <div className="flex flex-col lg:flex-row gap-0 rounded-[28px] overflow-hidden border border-line shadow-lg bg-white">
+
+              {/* Left Column - Info */}
+              <div className="lg:w-5/12 bg-cream p-8 md:p-12 flex flex-col">
+                <h2 id="contact-title" className="text-[32px] md:text-4xl font-display font-bold text-red tracking-tight mb-6 leading-tight">Still Deciding?<br/>Reach Out.</h2>
+                <p className="text-muted mb-10 text-[17px] leading-relaxed">Tell us a little about your eatery. We'll review your menu, build a free preview of your storefront, and provide answers to anything you're still weighing up.</p>
+
+                <div className="space-y-7 mt-auto border-t border-line/60 pt-8">
+                  {contactBenefits.map((benefit) => (
+                    <div key={benefit.title} className="flex gap-4">
+                      <div className="w-[22px] h-[22px] rounded-full bg-tomato text-white flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5 shadow-sm" aria-hidden="true">✓</div>
                       <div>
-                        <div className="text-[11px] font-bold text-[#173536]">{dish}</div>
-                        <div className="mt-1 text-[10px] text-[#91897d]">{index === 0 ? 'pickles · chili mayo' : index === 1 ? 'lime · herbs · feta' : 'fresh squeezed'}</div>
+                        <h3 className="font-bold text-ink mb-1 text-[15px]">{benefit.title}</h3>
+                        <p className="text-[15px] text-muted leading-relaxed">{benefit.description}</p>
                       </div>
-                      <div className="text-[11px] font-bold text-[#db6045]">{index === 0 ? '$14' : index === 1 ? '$12' : '$4'}</div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-xl bg-[#173536] px-4 py-3 text-center text-[11px] font-bold text-[#faf6ee]">Start an order <ArrowRight className="ml-1 inline h-3 w-3" /></div>
+              </div>
+
+              {/* Right Column - Form */}
+              <div className="lg:w-7/12 p-8 md:p-12 bg-white flex flex-col justify-center">
+                <div className="mb-10 pb-6 border-b border-line">
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-ink mb-3 leading-tight max-w-sm">Get Your Free Digital Storefront Preview</h2>
+                  <p className="text-muted text-[15px]">No card info, no strings — see your storefront before you decide anything.</p>
+                </div>
+
+                {successMessage ? (
+                  <div className="py-12 text-center animate-rise">
+                    <h3 className="text-2xl font-display font-bold text-ink mb-4" data-testid="status-preview-success">{successMessage}</h3>
+                    {inlineErrorMessage && <p className="text-muted text-base" data-testid="status-preview-code">{inlineErrorMessage}</p>}
+                  </div>
+                ) : (
+                <form className="space-y-6" onSubmit={handlePreviewSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Restaurant / Business Name <span className="text-tomato" aria-hidden="true">*</span></span>
+                      <input type="text" name="restaurantName" placeholder="e.g. Bella Roma Kitchen" required className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px] placeholder:text-muted/50" />
+                    </label>
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Your Name <span className="text-tomato" aria-hidden="true">*</span></span>
+                      <input type="text" name="name" placeholder="e.g. Marco Rossi" required className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px] placeholder:text-muted/50" />
+                    </label>
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Email Address <span className="text-tomato" aria-hidden="true">*</span></span>
+                      <input type="email" name="email" placeholder="marco@bellaromakitchen.com" required className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px] placeholder:text-muted/50" />
+                    </label>
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Phone Number <span className="text-tomato" aria-hidden="true">*</span></span>
+                      <input type="tel" name="phone" placeholder="(555) 234-5678" required className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px] placeholder:text-muted/50" />
+                    </label>
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Venue Type</span>
+                      <select name="venueType" defaultValue="" className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px]">
+                        <option value="" disabled>Select one</option>
+                        <option>Restaurant full service</option>
+                        <option>Restaurant fast casual/counter</option>
+                        <option>Cafe or bakery</option>
+                        <option>Food truck / pop up</option>
+                        <option>Bar/ brewery</option>
+                        <option>Other</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Est. Daily Order Volume</span>
+                      <select name="dailyOrderVolume" defaultValue="" className="w-full h-[52px] px-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px]">
+                        <option value="" disabled>Select one</option>
+                        <option>Under 10 orders</option>
+                        <option>10-50 orders</option>
+                        <option>50-100 orders</option>
+                        <option>100+ orders</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <fieldset className="block pt-3 border-0 m-0 p-0">
+                    <legend className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-3 p-0">Which Services Are You Considering? <span className="text-tomato" aria-hidden="true">*</span></legend>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { id: 'bundle', label: 'The Bundle', tag: 'Most Popular' },
+                        { id: 'food', label: 'Food Ordering' },
+                        { id: 'merch', label: 'Merch Store' },
+                        { id: 'landing', label: 'Custom Web Page Only' }
+                      ].map(opt => {
+                        const isSelected = selectedServices.includes(opt.id);
+                        return (
+                          <label
+                            key={opt.id}
+                            className={`relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? 'border-[#e58a70] bg-[#fff0e9]' : 'border-[#ded4c8] bg-white hover:border-[#e5a18c]'}`}
+                          >
+                            <input
+                              type="checkbox"
+                              name="service"
+                              value={opt.id}
+                              checked={isSelected}
+                              onChange={() => toggleService(opt.id)}
+                              className="service-checkbox order-last ml-3 w-[22px] h-[22px] shrink-0 accent-[#8b281c] cursor-pointer"
+                              required={selectedServices.length === 0}
+                            />
+                            <div className="flex-1">
+                              <span className="font-bold text-ink text-[14px] leading-tight block">{opt.label}</span>
+                              {opt.tag && <span className="text-[12px] uppercase tracking-[0.04em] font-bold text-tomato-dark mt-1.5 block">{opt.tag}</span>}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <label className="block pt-3">
+                    <span className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Questions or Comments</span>
+                    <textarea name="comments" placeholder="Anything on your mind — POS setup, menu size, delivery zones..." rows={3} className="w-full min-h-[120px] p-4 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all resize-y text-[15px] placeholder:text-muted/50"></textarea>
+                  </label>
+
+                  <ReferenceCode value={referenceCode} onChange={setReferenceCode} />
+                  {inlineErrorMessage && <div className="text-red text-base font-bold bg-red/10 p-3 rounded" data-testid="status-preview-error">{inlineErrorMessage}</div>}
+                  <button type="submit" disabled={submitPreviewLead.isPending} data-testid="button-submit-preview" className="w-full bg-tomato hover:bg-tomato-dark text-white font-bold py-4 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-base mt-2 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2 disabled:opacity-50">
+                    {submitPreviewLead.isPending ? 'Sending...' : 'Get My Free Preview'} <span aria-hidden="true">→</span>
+                  </button>
+                </form>
+                )}
               </div>
             </div>
           </div>
-          <div className="order-card absolute -bottom-5 -right-1 rounded-2xl border border-[#e1d7c8] bg-[#faf6ee] p-4 text-[#173536] card-shadow sm:-right-4">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#dce8db] text-[#286153]"><Check className="h-4 w-4" /></span>
-              <div>
-                <div className="mono text-[9px] uppercase tracking-[.11em] text-[#8d8a7e]">New order</div>
-                <div className="text-xs font-bold">Ready for your kitchen</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="relative mx-auto flex max-w-7xl items-center justify-between border-t border-white/10 px-5 py-5 text-xs text-white/45 sm:px-8 lg:px-12">
-        <span className="mono uppercase tracking-[.12em]">Built for independent food businesses</span>
-        <span className="hidden sm:block">The merchant handles the food. We handle the tech.</span>
-      </div>
-    </section>
-  );
-}
+        </section>
 
-function HowItWorks() {
-  const steps = [
-    { number: '01', title: 'Tell us about your business', body: 'Share your menu, your style, and how you want guests to order. We start with what already makes your place yours.' },
-    { number: '02', title: 'We build the front', body: 'Sixth Front creates your branded ordering experience, organizes the details, and gets everything ready to launch.' },
-    { number: '03', title: 'You start getting orders', body: 'Put your link or QR code where guests can find it. You run the kitchen; we manage the technology behind the order.' },
-  ];
-  return (
-    <section id="how-it-works" className="bg-[hsl(var(--background))] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-24">
-          <div>
-            <div className="eyebrow">A simple handoff</div>
-            <h2 className="mt-5 max-w-md text-5xl leading-[.95] tracking-[-.055em] text-[hsl(var(--foreground))] sm:text-6xl">
-              You bring the <span className="serif italic text-[hsl(var(--primary))]">good stuff.</span>
-            </h2>
-            <p className="mt-6 max-w-sm leading-7 text-[hsl(var(--muted-foreground))]">
-              We turn it into an ordering experience that feels like a natural extension of your counter.
-            </p>
+        {/* Final CTA */}
+        <section className="bg-cream py-16 text-center border-t border-line" aria-labelledby="final-title">
+          <div className="max-w-2xl mx-auto px-5">
+            <h2 id="final-title" className="text-[28px] md:text-3xl font-display font-bold text-red mb-6 tracking-tight">Get Your Online Storefront Today!</h2>
+            <Link href="/signup" data-testid="button-final-get-started" className="inline-block bg-tomato hover:bg-tomato-dark text-white font-bold py-3.5 px-10 rounded-lg shadow-[0_4px_0_rgb(184,52,29)]">
+              Get Started
+            </Link>
           </div>
-          <div className="section-rule">
-            {steps.map((step) => (
-              <div className="grid gap-4 border-b border-[hsl(var(--border))] py-7 sm:grid-cols-[80px_1fr] sm:gap-5" key={step.number}>
-                <div className="step-number pt-1">{step.number}</div>
-                <div>
-                  <h3 className="text-xl font-semibold tracking-[-.025em]">{step.title}</h3>
-                  <p className="mt-2 max-w-lg leading-7 text-[hsl(var(--muted-foreground))]">{step.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="mt-20 grid gap-5 md:grid-cols-3">
-          <div className="soft-card rounded-2xl border border-[hsl(var(--border))] bg-[#edf0e7] p-6">
-            <MonitorSmartphone className="h-6 w-6 text-[#286153]" />
-            <h3 className="mt-12 text-lg font-semibold">Use what you have</h3>
-            <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Works on the devices you already use. No special hardware to buy.</p>
-          </div>
-          <div className="soft-card rounded-2xl border border-[hsl(var(--border))] bg-[#f0d69a] p-6">
-            <Store className="h-6 w-6 text-[#173536]" />
-            <h3 className="mt-12 text-lg font-semibold">Your brand, front and center</h3>
-            <p className="mt-2 text-sm leading-6 text-[#5e574b]">A direct path to your menu, without putting your business in a marketplace lineup.</p>
-          </div>
-          <div className="soft-card rounded-2xl border border-[hsl(var(--border))] bg-[#f7e4dc] p-6">
-            <QrCode className="h-6 w-6 text-[hsl(var(--primary))]" />
-            <h3 className="mt-12 text-lg font-semibold">Ready for the counter</h3>
-            <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">A simple QR code or link makes the next order easy to find.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+        </section>
+      </main>
 
-function Services() {
-  const services = [
-    { icon: QrCode, label: 'Most popular', title: 'QR code / online food ordering', price: '8%', suffix: 'commission per order', description: 'A branded ordering experience for your menu, built and launched for you.', featured: true, details: 'No setup fee. We only make money when you make money.' },
-    { icon: ShoppingBag, label: 'Add a new lane', title: 'Online merch storefront', price: '12%', suffix: 'commission per sale', description: 'A simple storefront for the goods people want to take home with them.', details: 'Keep your menu and your merch in one considered place.' },
-    { icon: MonitorSmartphone, label: 'A clear front door', title: 'Standalone landing page', price: '$39', suffix: 'per month', description: 'A focused home for your business, your story, and the next step for guests.', details: 'A strong starting point when you need a polished online presence.' },
-    { icon: Store, label: 'Keep it in sync', title: 'POS sync add-on', price: '$39', suffix: 'per month', description: 'A managed service that keeps your online menu in sync with your in-store point of sale.', details: 'We help keep the details aligned without asking you to become a technologist.' },
-  ];
-  return (
-    <section id="services" className="bg-[#e7e1d5] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <div className="eyebrow">Services & pricing</div>
-            <h2 className="mt-5 max-w-2xl text-5xl leading-[.95] tracking-[-.055em] sm:text-6xl">A better order of <span className="serif italic text-[hsl(var(--primary))]">operations.</span></h2>
-          </div>
-          <p className="max-w-xs leading-7 text-[hsl(var(--muted-foreground))]">Choose the pieces that fit the way your business works today. We can talk through what comes next.</p>
-        </div>
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
-          {services.map((service) => {
-            const Icon = service.icon;
-            return (
-              <article className={`pricing-card relative rounded-2xl border p-6 sm:p-8 ${service.featured ? 'pricing-featured border-[#286153] bg-[#286153] text-[#faf6ee]' : 'border-[hsl(var(--border))] bg-[hsl(var(--background))]'}`} key={service.title} data-testid={`card-service-${service.title.toLowerCase().replaceAll(' ', '-')}`}>
-                {service.featured && <div className="absolute right-6 top-6 rounded-full bg-[hsl(var(--accent))] px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[.1em] text-[#173536]">Start here</div>}
-                <Icon className={`h-6 w-6 ${service.featured ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--primary))]'}`} />
-                <div className={`eyebrow mt-12 ${service.featured ? 'text-[hsl(var(--accent))]' : ''}`}>{service.label}</div>
-                <h3 className="mt-2 max-w-sm text-2xl font-semibold tracking-[-.04em]">{service.title}</h3>
-                <div className="mt-6 flex items-baseline gap-2">
-                  <span className="serif text-6xl leading-none">{service.price}</span>
-                  <span className={`text-sm ${service.featured ? 'text-white/65' : 'text-[hsl(var(--muted-foreground))]'}`}>{service.suffix}</span>
-                </div>
-                <p className={`mt-5 max-w-md leading-7 ${service.featured ? 'text-white/75' : 'text-[hsl(var(--muted-foreground))]'}`}>{service.description}</p>
-                <div className={`mt-7 flex items-start gap-2 border-t pt-5 text-sm ${service.featured ? 'border-white/15 text-white/75' : 'border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))]'}`}>
-                  <Check className={`mt-0.5 h-4 w-4 shrink-0 ${service.featured ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--primary))]'}`} /> {service.details}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-        <p className="mt-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Interested in owning everything outright later? <a href="#contact" className="font-semibold text-[hsl(var(--primary))] underline decoration-[hsl(var(--accent))] underline-offset-4" data-testid="link-buyout-question">Ask us about a buyout option.</a></p>
-      </div>
-    </section>
-  );
-}
-
-function WhoItsFor() {
-  const audiences = [
-    { icon: Store, title: 'Restaurants', body: 'For the places with a full menu, a loyal regular crowd, and a lot to keep moving.' },
-    { icon: Coffee, title: 'Cafes', body: 'For morning rituals, quick pickups, and the details that make a small menu memorable.' },
-    { icon: Truck, title: 'Food trucks', body: 'For businesses that move around but need one dependable place for the next order.' },
-  ];
-  return (
-    <section id="who-its-for" className="bg-[hsl(var(--background))] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid items-end gap-10 lg:grid-cols-[1fr_.8fr]">
-          <div>
-            <div className="eyebrow">Made for your kind of busy</div>
-            <h2 className="mt-5 max-w-3xl text-5xl leading-[.93] tracking-[-.06em] sm:text-7xl">Good businesses deserve a <span className="serif italic text-[hsl(var(--secondary))]">good front door.</span></h2>
-          </div>
-          <p className="max-w-sm leading-7 text-[hsl(var(--muted-foreground))]">Sixth Front is for independent food businesses that want to be easier to order from without adding another job to the list.</p>
-        </div>
-        <div className="mt-16 grid gap-4 border-t border-[hsl(var(--border))] pt-4 md:grid-cols-3">
-          {audiences.map((audience) => {
-            const Icon = audience.icon;
-            return (
-              <div className="group border-b border-[hsl(var(--border))] py-7 md:border-b-0 md:border-r md:px-7 md:first:pl-0 md:last:border-r-0" key={audience.title}>
-                <div className="flex items-center justify-between">
-                  <Icon className="h-7 w-7 text-[hsl(var(--primary))] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
-                  <ArrowDownRight className="h-5 w-5 text-[hsl(var(--muted-foreground))] transition-transform duration-300 group-hover:translate-x-1 group-hover:translate-y-1" />
-                </div>
-                <h3 className="mt-14 text-2xl font-semibold tracking-[-.04em]">{audience.title}</h3>
-                <p className="mt-3 max-w-xs leading-7 text-[hsl(var(--muted-foreground))]">{audience.body}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Faq() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  return (
-    <section id="faq" className="bg-[#f2ece2] px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-24">
-        <div>
-          <div className="eyebrow">Questions, answered</div>
-          <h2 className="mt-5 max-w-md text-5xl leading-[.95] tracking-[-.055em] sm:text-6xl">No fine print <span className="serif italic text-[hsl(var(--primary))]">fog.</span></h2>
-          <p className="mt-6 max-w-sm leading-7 text-[hsl(var(--muted-foreground))]">A few practical answers before we talk about your menu.</p>
-        </div>
-        <div className="divide-y divide-[hsl(var(--border))] border-y border-[hsl(var(--border))]">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaq === index;
-            return (
-              <div className="faq-row" key={faq.question}>
-                <button className="flex w-full items-center justify-between gap-6 py-5 text-left" type="button" onClick={() => setOpenFaq(isOpen ? null : index)} aria-expanded={isOpen} data-testid={`button-faq-${index}`}>
-                  <span className="text-base font-semibold tracking-[-.02em] sm:text-lg">{faq.question}</span>
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-[hsl(var(--primary))] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isOpen && <div className="faq-answer max-w-2xl pb-6 pr-8 leading-7 text-[hsl(var(--muted-foreground))]" data-testid={`text-faq-answer-${index}`}>{faq.answer}</div>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Contact() {
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', business: '', message: '' });
-  const update = (field: keyof typeof form) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((current) => ({ ...current, [field]: event.target.value }));
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitted(true);
-  };
-  return (
-    <section id="contact" className="relative overflow-hidden bg-[#173536] px-5 py-24 text-[#faf6ee] sm:px-8 lg:px-12 lg:py-32">
-      <div className="hero-glow bottom-[-280px] left-[-220px] right-auto top-auto opacity-60" />
-      <div className="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
-        <div>
-          <div className="eyebrow text-[hsl(var(--accent))]">Let’s make ordering easier</div>
-          <h2 className="mt-5 max-w-lg text-5xl leading-[.92] tracking-[-.06em] sm:text-7xl">Your next good <span className="serif italic text-[hsl(var(--accent))]">move.</span></h2>
-          <p className="mt-7 max-w-md text-lg leading-8 text-white/65">Tell us a little about your business. We’ll come back with a clear view of what your online ordering could look like.</p>
-          <div className="mt-12 space-y-5 text-sm text-white/70">
-            <div className="flex items-center gap-3"><Check className="h-4 w-4 text-[hsl(var(--accent))]" /> No setup fee on commission plans</div>
-            <div className="flex items-center gap-3"><Check className="h-4 w-4 text-[hsl(var(--accent))]" /> Built and managed for you</div>
-            <div className="flex items-center gap-3"><Check className="h-4 w-4 text-[hsl(var(--accent))]" /> A conversation, not a sales maze</div>
-          </div>
-        </div>
-        {submitted ? (
-          <div className="flex min-h-[410px] flex-col justify-center rounded-3xl bg-[#f2ece2] p-7 text-[#173536] sm:p-12" data-testid="status-form-success">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#dce8db] text-[#286153]"><Check className="h-6 w-6" /></div>
-            <h3 className="mt-7 text-3xl font-semibold tracking-[-.04em]">We’ve got it.</h3>
-            <p className="mt-3 max-w-sm leading-7 text-[#6a675f]">Thanks for reaching out{form.name ? `, ${form.name}` : ''}. We’ll review the details and follow up about your ordering setup.</p>
-            <button type="button" className="mt-8 inline-flex w-fit items-center rounded-full border border-[#173536]/20 px-5 py-3 text-sm font-semibold transition-colors hover:border-[#db6045] hover:text-[#db6045]" onClick={() => setSubmitted(false)} data-testid="button-send-another">
-              Send another note <ArrowRight className="ml-2 h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <form className="rounded-3xl bg-[#f2ece2] p-6 text-[#173536] sm:p-10" onSubmit={submit} data-testid="form-get-started">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="text-sm font-semibold">Your name
-                <input className="form-input mt-2 w-full rounded-xl border border-[#d8cfbf] bg-[#faf6ee] px-4 py-3.5 text-sm font-normal" type="text" value={form.name} onChange={update('name')} placeholder="Your name" required data-testid="input-name" />
-              </label>
-              <label className="text-sm font-semibold">Email
-                <input className="form-input mt-2 w-full rounded-xl border border-[#d8cfbf] bg-[#faf6ee] px-4 py-3.5 text-sm font-normal" type="email" value={form.email} onChange={update('email')} placeholder="you@yourbusiness.com" required data-testid="input-email" />
-              </label>
-            </div>
-            <label className="mt-5 block text-sm font-semibold">Business name
-              <input className="form-input mt-2 w-full rounded-xl border border-[#d8cfbf] bg-[#faf6ee] px-4 py-3.5 text-sm font-normal" type="text" value={form.business} onChange={update('business')} placeholder="The name guests know you by" required data-testid="input-business" />
-            </label>
-            <label className="mt-5 block text-sm font-semibold">What are you working on?
-              <textarea className="form-input mt-2 min-h-32 w-full resize-y rounded-xl border border-[#d8cfbf] bg-[#faf6ee] px-4 py-3.5 text-sm font-normal" value={form.message} onChange={update('message')} placeholder="Tell us about your menu, your setup, or what you want to make easier." required data-testid="input-message" />
-            </label>
-            <button className="solid-button mt-6 inline-flex w-full items-center justify-center rounded-full bg-[hsl(var(--primary))] px-6 py-3.5 font-semibold text-[#faf6ee]" type="submit" data-testid="button-submit-contact">
-              Get Started <ArrowRight className="ml-3 h-4 w-4" />
-            </button>
-            <p className="mt-4 text-center text-xs leading-5 text-[#898277]">This is a placeholder contact form for now. We’ll use your note to start the conversation.</p>
-          </form>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="bg-[#173536] px-5 pb-8 text-[#faf6ee] sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 border-t border-white/15 pt-8 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <BrandMark />
-          <p className="mt-4 max-w-xs text-sm leading-6 text-white/50">The calm, capable operating partner for independent food businesses.</p>
-        </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
-          {navItems.map((item) => <a className="footer-link text-white/55" href={item.href} key={item.href} data-testid={`link-footer-${item.label.toLowerCase().replaceAll(' ', '-')}`}>{item.label}</a>)}
-          <a className="footer-link text-white/55" href="#contact" data-testid="link-footer-contact">Contact</a>
-        </div>
-        <div className="mono text-[10px] uppercase tracking-[.12em] text-white/35">© {new Date().getFullYear()} Sixth Front</div>
-      </div>
-    </footer>
-  );
-}
-
-function Home() {
-  return (
-    <div className="site-shell">
-      <Hero />
-      <HowItWorks />
-      <Services />
-      <WhoItsFor />
-      <Faq />
-      <Contact />
-      <Footer />
+      {/* Footer */}
+      <footer className="bg-tomato border-t border-white/20 text-[#fff4e5] py-10 flex flex-col items-center justify-center gap-3">
+        <a href="#top" onClick={(e) => { e.preventDefault(); scrollToId('top'); }} className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-white rounded mb-1" data-testid="link-footer-brand" aria-label="Sixth Front home">
+          <img src={logoImage} alt="" className="w-10 h-[35px] object-contain brightness-0 invert opacity-95" aria-hidden="true" />
+          <img src={wordmarkImage} alt="Sixth Front" className="w-[140px] h-[28px] object-contain brightness-0 invert opacity-95" />
+        </a>
+        <p className="text-[15px] font-medium text-white/90 tracking-wide">Digital support for independent restaurants.</p>
+      </footer>
     </div>
   );
 }
 
 function Router() {
   return (
-    <RoutedErrorBoundary>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route component={NotFound} />
-      </Switch>
-    </RoutedErrorBoundary>
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/payment-onboarding/return" component={PaymentOnboardingReturn} />
+      <Route component={NotFound} />
+    </Switch>
   );
-}
-
-function RoutedErrorBoundary({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <Router />
+    </WouterRouter>
   );
 }
 
