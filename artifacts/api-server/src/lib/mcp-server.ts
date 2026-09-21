@@ -1,4 +1,9 @@
-import { createHash, createHmac } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  randomUUID,
+  timingSafeEqual,
+} from "node:crypto";
 import Stripe from "stripe";
 import { z } from "zod/v4";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -32,12 +37,59 @@ export function getMcpClientSecret() {
   return process.env.MCP_CLIENT_SECRET?.trim() || null;
 }
 
-export function getMcpAccessToken() {
+const MCP_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
+
+type McpAccessTokenPayload = {
+  audience: "sixth-front-mcp";
+  expiresAt: number;
+  issuedAt: number;
+  nonce: string;
+};
+
+const accessTokenSignature = (payload: string, secret: string) =>
+  createHmac("sha256", secret).update(payload).digest("base64url");
+
+export function issueMcpAccessToken() {
   const secret = getMcpClientSecret();
   if (!secret) return null;
-  return createHmac("sha256", secret)
-    .update("sixth-front-mcp-access-token")
-    .digest("base64url");
+  const issuedAt = Date.now();
+  const encodedPayload = Buffer.from(
+    JSON.stringify({
+      audience: "sixth-front-mcp",
+      issuedAt,
+      expiresAt: issuedAt + MCP_ACCESS_TOKEN_TTL_MS,
+      nonce: randomUUID(),
+    } satisfies McpAccessTokenPayload),
+  ).toString("base64url");
+  return `${encodedPayload}.${accessTokenSignature(encodedPayload, secret)}`;
+}
+
+export function validateMcpAccessToken(token: string) {
+  const secret = getMcpClientSecret();
+  const [encodedPayload, suppliedSignature, ...rest] = token.split(".");
+  if (!secret || !encodedPayload || !suppliedSignature || rest.length) return false;
+
+  const expected = Buffer.from(accessTokenSignature(encodedPayload, secret));
+  const supplied = Buffer.from(suppliedSignature);
+  if (
+    expected.length !== supplied.length ||
+    !timingSafeEqual(expected, supplied)
+  ) {
+    return false;
+  }
+
+  try {
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    ) as McpAccessTokenPayload;
+    return (
+      payload.audience === "sixth-front-mcp" &&
+      Number.isFinite(payload.expiresAt) &&
+      payload.expiresAt > Date.now()
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function hashMcpToken(token: string) {

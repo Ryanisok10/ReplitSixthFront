@@ -1,13 +1,20 @@
-import { randomUUID } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  randomUUID,
+} from "node:crypto";
 import { Router, type IRouter, type Request, type Response } from "express";
+import { and, eq, gt, isNull } from "drizzle-orm";
+import { db, mcpOauthAuthorizationCodesTable } from "@workspace/db";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
   createMcpServer,
-  getMcpAccessToken,
   getMcpClientId,
   getMcpClientSecret,
+  issueMcpAccessToken,
+  validateMcpAccessToken,
 } from "../lib/mcp-server";
 
 const router: IRouter = Router();
@@ -16,6 +23,15 @@ const streamableTransports = new Map<
   StreamableHTTPServerTransport
 >();
 const sseTransports = new Map<string, SSEServerTransport>();
+const ABACUS_REDIRECT_URI = "https://abacus.ai/oauth/callback";
+const AUTHORIZATION_CODE_TTL_MS = 5 * 60 * 1000;
+
+const oauthAccessTokenResponse = () => ({
+  access_token: issueMcpAccessToken(),
+  token_type: "Bearer",
+  expires_in: 3600,
+  scope: "mcp:tools",
+});
 
 const baseUrl = (req: Request) => {
   const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
@@ -58,7 +74,7 @@ function authenticated(req: Request) {
     // Support clients that can send a static bearer credential but cannot
     // complete the client-credentials exchange. The normal OAuth-issued token
     // remains supported and preferred.
-    return bearer === getMcpAccessToken() || bearer === clientSecret;
+    return validateMcpAccessToken(bearer) || bearer === clientSecret;
   }
 
   const credentials = basicCredentials(req);
@@ -88,12 +104,15 @@ const oauthMetadata = (req: Request) => {
   const origin = baseUrl(req);
   return {
     issuer: origin,
+    authorization_endpoint: `${origin}/oauth/authorize`,
     token_endpoint: `${origin}/oauth/token`,
-    grant_types_supported: ["client_credentials"],
+    response_types_supported: ["code"],
+    grant_types_supported: ["authorization_code", "client_credentials"],
     token_endpoint_auth_methods_supported: [
       "client_secret_basic",
       "client_secret_post",
     ],
+    code_challenge_methods_supported: ["S256"],
     scopes_supported: ["mcp:tools"],
   };
 };
@@ -181,7 +200,82 @@ router.get(
   },
 );
 
-router.post("/oauth/token", (req, res) => {
+router.get("/oauth/authorize", async (req, res) => {
+  const clientId =
+    typeof req.query.client_id === "string" ? req.query.client_id : "";
+  const redirectUri =
+    typeof req.query.redirect_uri === "string" ? req.query.redirect_uri : "";
+  const responseType =
+    typeof req.query.response_type === "string" ? req.query.response_type : "";
+  const state = typeof req.query.state === "string" ? req.query.state : "";
+  const requestedScope =
+    typeof req.query.scope === "string" ? req.query.scope : "mcp:tools";
+  const codeChallenge =
+    typeof req.query.code_challenge === "string"
+      ? req.query.code_challenge
+      : null;
+  const codeChallengeMethod =
+    typeof req.query.code_challenge_method === "string"
+      ? req.query.code_challenge_method
+      : null;
+
+  if (
+    clientId !== getMcpClientId() ||
+    redirectUri !== ABACUS_REDIRECT_URI ||
+    responseType !== "code"
+  ) {
+    res.status(400).json({
+      error: "invalid_request",
+      error_description: "The OAuth authorization request is invalid.",
+    });
+    return;
+  }
+
+  const callback = new URL(redirectUri);
+  if (requestedScope !== "mcp:tools") {
+    callback.searchParams.set("error", "invalid_scope");
+    if (state) callback.searchParams.set("state", state);
+    res.redirect(callback.toString());
+    return;
+  }
+  if (
+    !codeChallenge ||
+    codeChallenge.length < 43 ||
+    codeChallenge.length > 128 ||
+    !/^[A-Za-z0-9_-]+$/.test(codeChallenge) ||
+    codeChallengeMethod !== "S256"
+  ) {
+    callback.searchParams.set("error", "invalid_request");
+    callback.searchParams.set(
+      "error_description",
+      "A valid S256 PKCE challenge is required.",
+    );
+    if (state) callback.searchParams.set("state", state);
+    res.redirect(callback.toString());
+    return;
+  }
+
+  if (!getMcpClientSecret()) {
+    res.status(503).json({ error: "MCP credentials are not configured." });
+    return;
+  }
+
+  const code = randomBytes(32).toString("base64url");
+  await db.insert(mcpOauthAuthorizationCodesTable).values({
+    codeHash: createHash("sha256").update(code).digest("hex"),
+    clientId,
+    redirectUri,
+    scope: requestedScope,
+    codeChallenge,
+    expiresAt: new Date(Date.now() + AUTHORIZATION_CODE_TTL_MS),
+  });
+
+  callback.searchParams.set("code", code);
+  if (state) callback.searchParams.set("state", state);
+  res.redirect(callback.toString());
+});
+
+router.post("/oauth/token", async (req, res) => {
   const clientSecret = getMcpClientSecret();
   const credentials = basicCredentials(req);
   const clientId =
@@ -199,7 +293,6 @@ router.post("/oauth/token", (req, res) => {
 
   if (
     !clientSecret ||
-    grantType !== "client_credentials" ||
     clientId !== getMcpClientId() ||
     suppliedSecret !== clientSecret
   ) {
@@ -210,11 +303,56 @@ router.post("/oauth/token", (req, res) => {
     return;
   }
 
-  res.json({
-    access_token: getMcpAccessToken(),
-    token_type: "Bearer",
-    expires_in: 3600,
-    scope: "mcp:tools",
+  if (grantType === "client_credentials") {
+    res.json(oauthAccessTokenResponse());
+    return;
+  }
+
+  if (grantType === "authorization_code") {
+    const code = typeof req.body?.code === "string" ? req.body.code : "";
+    const redirectUri =
+      typeof req.body?.redirect_uri === "string" ? req.body.redirect_uri : "";
+    const codeVerifier =
+      typeof req.body?.code_verifier === "string" ? req.body.code_verifier : "";
+    const [authorization] = await db
+      .update(mcpOauthAuthorizationCodesTable)
+      .set({ redeemedAt: new Date() })
+      .where(
+        and(
+          eq(
+            mcpOauthAuthorizationCodesTable.codeHash,
+            createHash("sha256").update(code).digest("hex"),
+          ),
+          eq(mcpOauthAuthorizationCodesTable.clientId, clientId),
+          eq(mcpOauthAuthorizationCodesTable.redirectUri, redirectUri),
+          isNull(mcpOauthAuthorizationCodesTable.redeemedAt),
+          gt(mcpOauthAuthorizationCodesTable.expiresAt, new Date()),
+        ),
+      )
+      .returning();
+    const verifierMatches =
+      Boolean(authorization) &&
+      codeVerifier.length >= 43 &&
+      codeVerifier.length <= 128 &&
+      /^[A-Za-z0-9._~-]+$/.test(codeVerifier) &&
+      createHash("sha256").update(codeVerifier).digest("base64url") ===
+        authorization?.codeChallenge;
+
+    if (!authorization || !verifierMatches) {
+      res.status(400).json({
+        error: "invalid_grant",
+        error_description: "The authorization code is invalid or expired.",
+      });
+      return;
+    }
+
+    res.json(oauthAccessTokenResponse());
+    return;
+  }
+
+  res.status(400).json({
+    error: "unsupported_grant_type",
+    error_description: "The requested OAuth grant type is not supported.",
   });
 });
 
