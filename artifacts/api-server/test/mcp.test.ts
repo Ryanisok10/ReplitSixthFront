@@ -156,7 +156,7 @@ describe("Abacus MCP discovery", () => {
       assert.deepEqual(metadata.response_types_supported, ["code"], path);
       assert.deepEqual(
         metadata.grant_types_supported,
-        ["authorization_code", "client_credentials"],
+        ["authorization_code", "refresh_token", "client_credentials"],
         path,
       );
     }
@@ -210,11 +210,14 @@ describe("Abacus MCP authentication", () => {
     assert.equal(tokenResponse.status, 200);
     const tokenPayload = (await tokenResponse.json()) as {
       access_token?: unknown;
+      refresh_token?: unknown;
       token_type?: unknown;
     };
     assert.equal(tokenPayload.token_type, "Bearer");
     assert.equal(typeof tokenPayload.access_token, "string");
     assert.ok(tokenPayload.access_token);
+    assert.equal(typeof tokenPayload.refresh_token, "string");
+    assert.ok(tokenPayload.refresh_token);
 
     const replayResponse = await request("/api/oauth/token", {
       method: "POST",
@@ -234,11 +237,52 @@ describe("Abacus MCP authentication", () => {
     assert.equal(replayResponse.status, 400);
     assert.equal((await replayResponse.json()).error, "invalid_grant");
 
+    const refreshResponse = await request("/api/oauth/token", {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${Buffer.from(
+          `${testClientId}:${testSecret}`,
+        ).toString("base64")}`,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: tokenPayload.refresh_token,
+      }),
+    });
+    assert.equal(refreshResponse.status, 200);
+    const refreshed = (await refreshResponse.json()) as {
+      access_token?: unknown;
+      refresh_token?: unknown;
+    };
+    assert.equal(typeof refreshed.access_token, "string");
+    assert.equal(typeof refreshed.refresh_token, "string");
+    assert.notEqual(refreshed.refresh_token, tokenPayload.refresh_token);
+
+    const reusedRefreshResponse = await request("/api/oauth/token", {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${Buffer.from(
+          `${testClientId}:${testSecret}`,
+        ).toString("base64")}`,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: tokenPayload.refresh_token,
+      }),
+    });
+    assert.equal(reusedRefreshResponse.status, 400);
+    assert.equal(
+      (await reusedRefreshResponse.json()).error,
+      "invalid_grant",
+    );
+
     const sessionId = await initializeMcp(
       "/api/mcp",
-      tokenPayload.access_token,
+      refreshed.access_token,
     );
-    await closeMcpSession("/api/mcp", sessionId, tokenPayload.access_token);
+    await closeMcpSession("/api/mcp", sessionId, refreshed.access_token);
   });
 
   it("requires S256 PKCE before issuing an authorization code", async () => {

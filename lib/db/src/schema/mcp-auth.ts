@@ -16,3 +16,15 @@ export const mcpOauthAuthorizationCodesTable = pgTable(
       .defaultNow(),
   },
 );
+
+export const mcpOauthRefreshTokensTable = pgTable("mcp_oauth_refresh_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  clientId: text("client_id").notNull(),
+  scope: text("scope").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

@@ -5,7 +5,11 @@ import {
 } from "node:crypto";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { db, mcpOauthAuthorizationCodesTable } from "@workspace/db";
+import {
+  db,
+  mcpOauthAuthorizationCodesTable,
+  mcpOauthRefreshTokensTable,
+} from "@workspace/db";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -25,13 +29,25 @@ const streamableTransports = new Map<
 const sseTransports = new Map<string, SSEServerTransport>();
 const ABACUS_REDIRECT_URI = "https://abacus.ai/oauth/callback";
 const AUTHORIZATION_CODE_TTL_MS = 5 * 60 * 1000;
+const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-const oauthAccessTokenResponse = () => ({
+const oauthTokenResponse = (refreshToken?: string) => ({
   access_token: issueMcpAccessToken(),
   token_type: "Bearer",
   expires_in: 3600,
   scope: "mcp:tools",
+  ...(refreshToken
+    ? {
+        refresh_token: refreshToken,
+        refresh_token_expires_in: Math.floor(REFRESH_TOKEN_TTL_MS / 1000),
+      }
+    : {}),
 });
+
+const newRefreshToken = () => randomBytes(32).toString("base64url");
+
+const refreshTokenHash = (token: string) =>
+  createHash("sha256").update(token).digest("hex");
 
 const baseUrl = (req: Request) => {
   const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
@@ -107,7 +123,11 @@ const oauthMetadata = (req: Request) => {
     authorization_endpoint: `${origin}/oauth/authorize`,
     token_endpoint: `${origin}/oauth/token`,
     response_types_supported: ["code"],
-    grant_types_supported: ["authorization_code", "client_credentials"],
+    grant_types_supported: [
+      "authorization_code",
+      "refresh_token",
+      "client_credentials",
+    ],
     token_endpoint_auth_methods_supported: [
       "client_secret_basic",
       "client_secret_post",
@@ -304,7 +324,7 @@ router.post("/oauth/token", async (req, res) => {
   }
 
   if (grantType === "client_credentials") {
-    res.json(oauthAccessTokenResponse());
+    res.json(oauthTokenResponse());
     return;
   }
 
@@ -346,7 +366,59 @@ router.post("/oauth/token", async (req, res) => {
       return;
     }
 
-    res.json(oauthAccessTokenResponse());
+    const refreshToken = newRefreshToken();
+    await db.insert(mcpOauthRefreshTokensTable).values({
+      tokenHash: refreshTokenHash(refreshToken),
+      clientId,
+      scope: authorization.scope,
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+    });
+    res.json(oauthTokenResponse(refreshToken));
+    return;
+  }
+
+  if (grantType === "refresh_token") {
+    const suppliedRefreshToken =
+      typeof req.body?.refresh_token === "string"
+        ? req.body.refresh_token
+        : "";
+    const replacementRefreshToken = newRefreshToken();
+    const rotated = await db.transaction(async (tx) => {
+      const [current] = await tx
+        .update(mcpOauthRefreshTokensTable)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(
+              mcpOauthRefreshTokensTable.tokenHash,
+              refreshTokenHash(suppliedRefreshToken),
+            ),
+            eq(mcpOauthRefreshTokensTable.clientId, clientId),
+            isNull(mcpOauthRefreshTokensTable.revokedAt),
+            gt(mcpOauthRefreshTokensTable.expiresAt, new Date()),
+          ),
+        )
+        .returning();
+      if (!current) return null;
+
+      await tx.insert(mcpOauthRefreshTokensTable).values({
+        tokenHash: refreshTokenHash(replacementRefreshToken),
+        clientId,
+        scope: current.scope,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+      });
+      return replacementRefreshToken;
+    });
+
+    if (!rotated) {
+      res.status(400).json({
+        error: "invalid_grant",
+        error_description: "The refresh token is invalid or expired.",
+      });
+      return;
+    }
+
+    res.json(oauthTokenResponse(rotated));
     return;
   }
 
