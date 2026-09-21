@@ -17,7 +17,6 @@ import {
   submitSignupCode,
   submitStandard,
 } from "../lib/merchant-intake";
-import { fireLeadWebhook } from "../lib/n8n-webhook";
 
 const router: IRouter = Router();
 
@@ -102,15 +101,6 @@ router.post("/merchant-intake/preview", async (req, res): Promise<void> => {
       "Stored preview lead",
     );
     res.status(201).json(SubmitPreviewLeadResponse.parse(result));
-    void fireLeadWebhook({
-      flowType: "preview",
-      businessName: parsed.data.businessName,
-      ownerName: parsed.data.ownerName,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      services: parsed.data.services as string[],
-      referenceCode: parsed.data.referenceCode ?? null,
-    });
   } catch (error) {
     if (error instanceof IntakeConflictError) {
       res.status(409).json({ error: error.message });
@@ -189,15 +179,6 @@ router.post(
         "Stored standard merchant signup",
       );
       res.status(201).json(SubmitStandardSignupResponse.parse(result));
-      void fireLeadWebhook({
-        flowType: "standard",
-        businessName: parsed.data.basics.businessName,
-        ownerName: parsed.data.basics.ownerName,
-        email: parsed.data.basics.email,
-        phone: parsed.data.basics.phone,
-        services: parsed.data.services as string[],
-        monthlyOrderVolume: parsed.data.basics.monthlyOrderVolume,
-      });
     } catch (error) {
       if (error instanceof IntakeConflictError) {
         res.status(409).json({ error: error.message });
