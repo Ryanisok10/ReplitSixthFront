@@ -35,7 +35,6 @@ export async function getUncachableStripeClient() {
   const { secretKey } = await getStripeCredentials();
   return new Stripe(secretKey);
 }
-
 let stripeSyncPromise: Promise<StripeSync> | undefined;
 
 export async function getStripeSync() {

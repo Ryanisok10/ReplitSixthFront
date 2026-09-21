@@ -74,46 +74,7 @@ router.get("/merchant-intake/agreement", async (req, res): Promise<void> => {
 });
 
 router.post("/merchant-intake/preview", async (req, res): Promise<void> => {
-  const parsed = SubmitPreviewLeadBody.safeParse(req.body);
-  if (!parsed.success) {
-    const code = suppliedReferenceCode(req.body);
-    if (code) {
-      const identity = attemptedIdentity(req.body, "preview");
-      await recordInvalidReferenceCodeAttempt({
-        flowType: "preview",
-        code,
-        ipAddress: requestIp(req),
-        ...identity,
-      });
-    }
-    req.log.warn(
-      { validationErrors: validationErrors(parsed.error.issues) },
-      "Invalid preview lead submission",
-    );
-    res.status(400).json({ error: "Please check the highlighted fields." });
-    return;
-  }
-
-  try {
-    const result = await submitPreview(parsed.data, requestIp(req));
-    req.log.info(
-      { submissionId: result.submissionId, outcome: result.outcome },
-      "Stored preview lead",
-    );
-    res.status(201).json(SubmitPreviewLeadResponse.parse(result));
-  } catch (error) {
-    if (error instanceof IntakeConflictError) {
-      res.status(409).json({ error: error.message });
-      return;
-    }
-    throw error;
-  }
-});
-
-router.post(
-  "/merchant-intake/signup/reference-code",
-  async (req, res): Promise<void> => {
-    const parsed = SubmitSignupReferenceCodeBody.safeParse(req.body);
+    const parsed = SubmitStandardSignupBody.safeParse(req.body);
     if (!parsed.success) {
       const code = suppliedReferenceCode(req.body);
       if (code) {
@@ -134,7 +95,61 @@ router.post(
     }
 
     try {
-      const result = await submitSignupCode(parsed.data, requestIp(req));
+      const result = await submitStandard(parsed.data, requestIp(req), {
+        userAgent: req.headers["user-agent"] ?? null,
+        sessionId:
+          (req as { cookies?: Record<string, string> }).cookies?.sessionId ??
+          null,
+      });
+      req.log.info(
+        {
+          submissionId: result.submissionId,
+          codeStatus: result.codeStatus,
+          outcome: result.outcome,
+        },
+        "Processed signup reference code",
+      );
+      res.json(SubmitSignupReferenceCodeResponse.parse(result));
+    } catch (error) {
+      if (error instanceof IntakeConflictError) {
+        res.status(409).json({ error: error.message });
+        return;
+      }
+      throw error;
+    }
+  },
+);
+
+router.post(
+  "/merchant-intake/signup/standard",
+  async (req, res): Promise<void> => {
+    const parsed = SubmitStandardSignupBody.safeParse(req.body);
+    if (!parsed.success) {
+      const code = suppliedReferenceCode(req.body);
+      if (code) {
+        const identity = attemptedIdentity(req.body, "signup");
+        await recordInvalidReferenceCodeAttempt({
+          flowType: "signup",
+          code,
+          ipAddress: requestIp(req),
+          ...identity,
+        });
+      }
+      req.log.warn(
+        { validationErrors: validationErrors(parsed.error.issues) },
+        "Invalid signup reference code submission",
+      );
+      res.status(400).json({ error: "Please check the highlighted fields." });
+      return;
+    }
+
+    try {
+      const result = await submitStandard(parsed.data, requestIp(req), {
+        userAgent: req.headers["user-agent"] ?? null,
+        sessionId:
+          (req as { cookies?: Record<string, string> }).cookies?.sessionId ??
+          null,
+      });
       req.log.info(
         {
           submissionId: result.submissionId,

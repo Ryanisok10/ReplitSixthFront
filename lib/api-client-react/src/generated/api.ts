@@ -42,7 +42,6 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -59,8 +58,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export const getHealthCheckUrl = () => {
-
-
 
 
   return `/api/healthz`
@@ -82,9 +79,6 @@ export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]):
 );}
 
 
-
-
-
 export const getHealthCheckQueryKey = () => {
     return [
     `/api/healthz`
@@ -98,11 +92,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
@@ -129,14 +119,7 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 }
 
 
-
-
-
-
-
 export const getGetMerchantAgreementUrl = () => {
-
-
 
 
   return `/api/merchant-intake/agreement`
@@ -157,9 +140,6 @@ export const getMerchantAgreement = async ( options?: Parameters<typeof customFe
 );}
 
 
-
-
-
 export const getGetMerchantAgreementQueryKey = () => {
     return [
     `/api/merchant-intake/agreement`
@@ -174,11 +154,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetMerchantAgreementQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getMerchantAgreement>>> = ({ signal }) => getMerchantAgreement({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMerchantAgreement>>, TError, TData> & { queryKey: QueryKey }
@@ -205,14 +181,7 @@ export function useGetMerchantAgreement<TData = Awaited<ReturnType<typeof getMer
 }
 
 
-
-
-
-
-
 export const getSubmitPreviewLeadUrl = () => {
-
-
 
 
   return `/api/merchant-intake/preview`
@@ -233,9 +202,6 @@ export const submitPreviewLead = async (previewLeadInput: PreviewLeadInput, opti
 );}
 
 
-
-
-
 export const getSubmitPreviewLeadMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPreviewLead>>, TError,{data: BodyType<PreviewLeadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitPreviewLead>>, TError,{data: BodyType<PreviewLeadInput>}, TContext> => {
@@ -248,17 +214,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitPreviewLead>>, {data: BodyType<PreviewLeadInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitPreviewLead(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -284,8 +244,6 @@ export const useSubmitPreviewLead = <TError = ErrorType<ErrorResponse>,
 export const getSubmitSignupReferenceCodeUrl = () => {
 
 
-
-
   return `/api/merchant-intake/signup/reference-code`
 }
 
@@ -304,9 +262,6 @@ export const submitSignupReferenceCode = async (signupReferenceCodeInput: Signup
 );}
 
 
-
-
-
 export const getSubmitSignupReferenceCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSignupReferenceCode>>, TError,{data: BodyType<SignupReferenceCodeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitSignupReferenceCode>>, TError,{data: BodyType<SignupReferenceCodeInput>}, TContext> => {
@@ -319,17 +274,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitSignupReferenceCode>>, {data: BodyType<SignupReferenceCodeInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitSignupReferenceCode(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -355,8 +304,6 @@ export const useSubmitSignupReferenceCode = <TError = ErrorType<ErrorResponse>,
 export const getSubmitStandardSignupUrl = () => {
 
 
-
-
   return `/api/merchant-intake/signup/standard`
 }
 
@@ -375,9 +322,6 @@ export const submitStandardSignup = async (standardSignupInput: StandardSignupIn
 );}
 
 
-
-
-
 export const getSubmitStandardSignupMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitStandardSignup>>, TError,{data: BodyType<StandardSignupInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitStandardSignup>>, TError,{data: BodyType<StandardSignupInput>}, TContext> => {
@@ -390,17 +334,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitStandardSignup>>, {data: BodyType<StandardSignupInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitStandardSignup(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -426,8 +364,6 @@ export const useSubmitStandardSignup = <TError = ErrorType<ErrorResponse>,
 export const getCheckMerchantOnboardingStatusUrl = () => {
 
 
-
-
   return `/api/merchant-onboarding/status`
 }
 
@@ -446,9 +382,6 @@ export const checkMerchantOnboardingStatus = async (merchantOnboardingAccess: Me
 );}
 
 
-
-
-
 export const getCheckMerchantOnboardingStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, TError,{data: BodyType<MerchantOnboardingAccess>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, TError,{data: BodyType<MerchantOnboardingAccess>}, TContext> => {
@@ -461,17 +394,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, {data: BodyType<MerchantOnboardingAccess>}> = (props) => {
           const {data} = props ?? {};
 
           return  checkMerchantOnboardingStatus(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -493,4 +420,3 @@ export const useCheckMerchantOnboardingStatus = <TError = ErrorType<ErrorRespons
       > => {
       return useMutation(getCheckMerchantOnboardingStatusMutationOptions(options));
     }
-

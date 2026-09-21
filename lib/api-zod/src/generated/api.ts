@@ -51,7 +51,6 @@ export const submitPreviewLeadBodyCommentsMax = 2000;
 export const submitPreviewLeadBodyReferenceCodeMax = 64;
 
 
-
 export const SubmitPreviewLeadBody = zod.object({
   "idempotencyKey": zod.string().regex(submitPreviewLeadBodyIdempotencyKeyRegExp),
   "businessName": zod.string().min(1).max(submitPreviewLeadBodyBusinessNameMax),
@@ -102,7 +101,6 @@ export const submitSignupReferenceCodeBodyBasicsMonthlyOrderVolumeMax = 80;
 
 
 export const submitSignupReferenceCodeBodyReferenceCodeMax = 64;
-
 
 
 export const SubmitSignupReferenceCodeBody = zod.object({
@@ -159,7 +157,6 @@ export const submitStandardSignupBodyBasicsMonthlyOrderVolumeMax = 80;
 export const submitStandardSignupBodyAgreementVersionMax = 80;
 
 
-
 export const SubmitStandardSignupBody = zod.object({
   "idempotencyKey": zod.string().regex(submitStandardSignupBodyIdempotencyKeyRegExp),
   "basics": zod.object({
@@ -197,7 +194,6 @@ export const checkMerchantOnboardingStatusBodyTokenMin = 32;
 export const checkMerchantOnboardingStatusBodyTokenMax = 200;
 
 
-
 export const CheckMerchantOnboardingStatusBody = zod.object({
   "merchantId": zod.string().regex(checkMerchantOnboardingStatusBodyMerchantIdRegExp),
   "token": zod.string().min(checkMerchantOnboardingStatusBodyTokenMin).max(checkMerchantOnboardingStatusBodyTokenMax)
@@ -213,5 +209,4 @@ export const CheckMerchantOnboardingStatusResponse = zod.object({
   "message": zod.string(),
   "onboardingUrl": zod.string().nullish()
 })
-
 

@@ -4,6 +4,7 @@ import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./lib/stripe-client";
 import type Stripe from "stripe";
 import { refreshIncompleteMerchantAccounts } from "./lib/merchant-onboarding";
+import { ensureStripeV2EventDestination } from "./lib/stripe-webhooks";
 
 const rawPort = process.env["PORT"];
 
@@ -40,6 +41,21 @@ async function initializeStripe() {
   await sync.findOrCreateManagedWebhook(`https://${domain}/api/stripe/webhook`, {
     enabled_events: enabledEvents,
   });
+  if (process.env.STRIPE_V2_WEBHOOK_SECRET) {
+    try {
+      await ensureStripeV2EventDestination(domain);
+    } catch (error) {
+      logger.warn({ err: error }, "Stripe v2 event destination setup skipped");
+    }
+  } else {
+    logger.warn(
+      {
+        endpoint: `https://${domain}/api/stripe/v2/webhook`,
+        requiredSecret: "STRIPE_V2_WEBHOOK_SECRET",
+      },
+      "Stripe v2 event destination is awaiting its dedicated signing secret",
+    );
+  }
   void sync.syncBackfill().then(
     () => logger.info("Stripe backfill completed"),
     (err) => logger.error({ err }, "Stripe backfill failed"),

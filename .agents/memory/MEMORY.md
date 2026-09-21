@@ -3,3 +3,4 @@
 - [Stripe test account activation](stripe-test-account-activation.md) — Accounts v2 connected-account creation requires Stripe test-mode platform activation even when API and webhook secrets are valid.
 - [GitHub push authentication](github-git-provider.md) — a healthy GitHub API connection can coexist with a workspace Git CLI that lacks a usable Git push credential.
 - [MCP streamable HTTP clients](mcp-streamable-http-client.md) — initialize requests must advertise both JSON and event-stream response types.
+- [Image generation aspect ratio](image-generation-aspect-ratio.md) — AI image edits may return square canvases; compose wide assets before using them in responsive banners.
