@@ -287,7 +287,6 @@ export default function Home() {
                 </div>
                 <p className="text-muted text-sm leading-relaxed mb-2">No monthly fees. Only pay when orders come in.</p>
                 <p className="text-muted text-sm leading-relaxed mb-4">Perfect for taking orders online and at the table.</p>
-                <p className="text-ink font-bold text-sm mb-6 pb-6 border-b border-line">$99 one-time setup</p>
                 <ul className="space-y-3 mb-8 text-sm text-ink flex-1">
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Online pickup ordering</li>
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> QR table ordering</li>
@@ -307,7 +306,6 @@ export default function Home() {
                   <span className="text-xs font-bold text-muted uppercase tracking-wide">per sale</span>
                 </div>
                 <p className="text-muted text-sm mb-4 leading-relaxed">Unlock a new revenue stream. Sell your branded gear without buying any inventory upfront.</p>
-                <p className="text-ink font-bold text-sm mb-6 mt-auto pb-6 border-b border-line">$99 one-time setup</p>
                 <ul className="space-y-3 mb-8 text-sm text-ink flex-1">
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Sell hats, shirts, mugs, and more</li>
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-red/10 text-red flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> A shop built around your logo and designs</li>
@@ -328,7 +326,6 @@ export default function Home() {
                   <span className="text-xs font-bold text-paper/75 uppercase tracking-wide">on respective sales</span>
                 </div>
                 <p className="text-paper/90 text-sm leading-relaxed mb-2">The complete digital storefront. Food + Merch, working together seamlessly.</p>
-                <p className="text-[#FFD3A3] font-bold text-sm mb-6 pb-6 border-b border-paper/15">$0 setup — you save $198</p>
                 <ul className="space-y-3 mb-8 text-sm text-paper/90 flex-1">
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-paper/15 text-paper flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Everything in Food Ordering</li>
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-paper/15 text-paper flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Everything in Merch Store</li>
@@ -348,7 +345,6 @@ export default function Home() {
                   </div>
                   <p className="text-muted text-sm mb-2 leading-relaxed">Just need a professional home on the internet?</p>
                   <p className="text-muted text-sm mb-2">No ordering included.</p>
-                  <p className="text-ink font-bold text-sm">$99 one-time setup</p>
                 </div>
                 <ul className="space-y-3 my-7 lg:my-0 text-sm text-ink">
                   <li className="flex gap-3 items-start"><span className="w-[18px] h-[18px] rounded-full bg-line text-muted flex items-center justify-center shrink-0 text-[10px] mt-0.5" aria-hidden="true">✓</span> Professional one-page website</li>
@@ -496,6 +492,17 @@ export default function Home() {
                       <CtaButton disabled={submitPreviewLead.isPending} className="w-full md:w-auto" testId="button-submit-preview">
                         {submitPreviewLead.isPending ? 'Sending...' : 'Request Free Preview'}
                       </CtaButton>
+                      <p className="mt-4 text-xs leading-relaxed text-muted">
+                        By submitting this form, you agree to our{" "}
+                        <Link href="/terms" className="underline underline-offset-2 hover:text-ink">
+                          Terms of Use
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy" className="underline underline-offset-2 hover:text-ink">
+                          Privacy Policy
+                        </Link>
+                        .
+                      </p>
                     </div>
                   </form>
                 )}
@@ -521,6 +528,10 @@ export default function Home() {
         </a>
         <p className="text-[13px] font-medium text-white/90 tracking-wide">Digital support for independent restaurants.</p>
         <p className="text-[12px] text-white/70 tracking-wide">Questions? <a href="mailto:support@sixthfront.com" className="underline underline-offset-2 hover:text-white transition-colors">support@sixthfront.com</a></p>
+        <p className="px-5 text-center text-[12px] text-white/70 tracking-wide">Physical address: 5900 Balcones Drive STE 100, Austin, TX 78731</p>
+        <p className="max-w-3xl px-5 text-center text-[12px] leading-relaxed text-white/70 tracking-wide">Payment processing services provided by Sixth Front Payments LLC. Platform operations managed by Sixth Front Operations LLC.</p>
+        <p className="max-w-3xl px-5 text-center text-[12px] leading-relaxed text-white/70 tracking-wide">Sixth Front is a B2B technology platform providing white-label online ordering and digital storefront infrastructure to independent food and retail merchants.</p>
+        <LegalFooter variant="light" />
       </footer>
     </div>
   );

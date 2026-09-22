@@ -45,8 +45,10 @@ export default function HowPaymentsWorkPage() {
             the merchant&apos;s name appears on the customer&apos;s card statement.
           </p>
           <p>
-            Sixth Front receives a platform service fee that is deducted from the
-            merchant&apos;s charge. Customers are never charged separately by Sixth Front.
+            Sixth Front&apos;s platform service fee is 8% on food and QR ordering
+            transactions, and 12% on merchandise transactions. This fee is deducted from
+            the merchant&apos;s charge. Customers are never charged separately by Sixth
+            Front.
           </p>
           <p>
             Stripe processes and secures every payment. Sixth Front never stores customer

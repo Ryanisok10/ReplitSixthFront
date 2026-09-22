@@ -22,6 +22,8 @@ export function LegalFooter({ variant = 'light' }: { variant?: 'light' | 'muted'
     { href: '/cookies', label: 'Cookie Notice' },
     { href: '/sms-terms', label: 'SMS & Email Terms' },
     { href: '/how-it-works-payments', label: 'How Payments Work' },
+    { href: '/refund-policy', label: 'Refund Policy' },
+    { href: '/contact', label: 'Contact' },
   ];
 
   return (

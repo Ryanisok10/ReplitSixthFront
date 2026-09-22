@@ -1,0 +1,80 @@
+CONTEXT: Previous changes were made in the Replit editor but never committed to Git and have been lost. This prompt re-applies everything and adds required Stripe approval fixes. All files are in artifacts/sixth-front/src/. Commit everything to Git and redeploy when done.
+
+1. Remove the $99 one-time setup fee from artifacts/sixth-front/src/pages/home.tsx. Find every instance of $99 one-time setup (there are three — Food Ordering, Merch Store, Custom Web Page sections) and the $0 setup — you save $198 line in the Bundle section, and delete those lines entirely. The pricing cards should show the percentage rate and included features with no setup fee line.
+
+2. Add /how-it-works-payments route. Create artifacts/sixth-front/src/pages/how-it-works-payments.tsx with this exact content:
+
+tsx
+Copy
+export default function HowItWorksPayments() {
+  return (
+    <main className="max-w-2xl mx-auto px-6 py-16">
+      <h1 className="text-2xl font-bold mb-6">How Payments Work</h1>
+      <p className="mb-4">When a customer pays on Sixth Front, the charge goes directly to the merchant's Stripe account. The merchant is the seller of record, and the merchant's name appears on the customer's card statement.</p>
+      <p className="mb-4">Sixth Front's platform service fee is 8% on food and QR ordering transactions, and 12% on merchandise transactions. This fee is deducted from the merchant's charge. Customers are never charged separately by Sixth Front.</p>
+      <p className="mb-4">Stripe processes and secures every payment. Sixth Front never stores customer card details.</p>
+      <p className="mb-4">Stripe's terms apply to all payment transactions. <a href="https://stripe.com/legal/ssa" className="underline" target="_blank" rel="noopener noreferrer">Review the Stripe Services Agreement.</a></p>
+      <p>For payment questions, contact <a href="mailto:support@sixthfront.com" className="underline">support@sixthfront.com</a>.</p>
+    </main>
+  );
+}
+Try:
+|
+Register it in artifacts/sixth-front/src/App.tsx: add import HowItWorksPayments from "@/pages/how-it-works-payments"; at the top and add <Route path="/how-it-works-payments" component={HowItWorksPayments} /> inside the Switch.
+
+3. Update LegalFooter. In artifacts/sixth-front/src/components/legal-footer.tsx, add { href: '/how-it-works-payments', label: 'How Payments Work' } and { href: '/refund-policy', label: 'Refund Policy' } and { href: '/contact', label: 'Contact' } to the links array.
+
+4. Update Terms §6. In artifacts/sixth-front/src/legal/website-terms-of-use.txt, find Section 6 (Third-Party Services). At the end of that section, add this sentence: "Payment transactions on merchant ordering pages are processed directly by Stripe, Inc. on behalf of the applicable merchant; Stripe's use of your payment information is governed by Stripe's Privacy Policy and Services Agreement."
+
+5. Create /refund-policy page. Create artifacts/sixth-front/src/pages/refund-policy.tsx:
+
+tsx
+Copy
+export default function RefundPolicy() {
+  return (
+    <main className="max-w-2xl mx-auto px-6 py-16">
+      <h1 className="text-2xl font-bold mb-2">Refund & Cancellation Policy</h1>
+      <p className="text-sm text-gray-500 mb-8">Last updated: September 22, 2026</p>
+      <h2 className="font-semibold text-lg mb-2">Platform Service Fees</h2>
+      <p className="mb-4">Sixth Front earns a platform service fee on each processed transaction (8% on food and QR ordering; 12% on merchandise). These fees are earned as transactions are processed and are non-refundable once captured via Stripe.</p>
+      <h2 className="font-semibold text-lg mb-2">Standalone Web Page Subscription</h2>
+      <p className="mb-4">The $39/month standalone web page subscription may be cancelled by the merchant per the terms of their Master Services Agreement. Fees already collected for the current billing period are non-refundable.</p>
+      <h2 className="font-semibold text-lg mb-2">Customer Order Refunds</h2>
+      <p className="mb-4">Customer order refunds and disputes are handled directly by the merchant through their Stripe dashboard. Sixth Front does not issue refunds on behalf of merchants. Stripe's standard dispute and refund process applies.</p>
+      <h2 className="font-semibold text-lg mb-2">Questions</h2>
+      <p>Contact <a href="mailto:support@sixthfront.com" className="underline">support@sixthfront.com</a> for any questions about this policy.</p>
+    </main>
+  );
+}
+Try:
+|
+Register route in App.tsx.
+
+6. Create /contact page. Create artifacts/sixth-front/src/pages/contact.tsx:
+
+tsx
+Copy
+export default function Contact() {
+  return (
+    <main className="max-w-2xl mx-auto px-6 py-16">
+      <h1 className="text-2xl font-bold mb-8">Contact</h1>
+      <p className="mb-2 font-semibold">Sixth Front Operations LLC</p>
+      <p className="mb-2">5900 Balcones Drive STE 100<br/>Austin, TX 78731</p>
+      <p className="mb-2">Email: <a href="mailto:support@sixthfront.com" className="underline">support@sixthfront.com</a></p>
+      <p className="mb-2">Phone: [PHONE NUMBER]</p>
+    </main>
+  );
+}
+Try:
+|
+Register route in App.tsx.
+
+7. Update the main footer in artifacts/sixth-front/src/pages/home.tsx. Find the <footer> block at the bottom. After the support@sixthfront.com line, add:
+
+Physical address: 5900 Balcones Drive STE 100, Austin, TX 78731
+Entity line: Payment processing services provided by Sixth Front Payments LLC. Platform operations managed by Sixth Front Operations LLC.
+8. Add consent text under intake form. In artifacts/sixth-front/src/pages/home.tsx, find the intake/lead form submit button. Directly below the button, add: By submitting this form, you agree to our <a href="/terms">Terms of Use</a> and <a href="/privacy">Privacy Policy</a>.
+
+9. Add platform identity sentence to the footer or hero section of home.tsx: Sixth Front is a B2B technology platform providing white-label online ordering and digital storefront infrastructure to independent food and retail merchants.
+
+10. Commit everything to Git with message "Stripe approval: re-apply Batch 2 + compliance fixes" and redeploy. Then confirm these URLs all load with content (not 404): /how-it-works-payments, /refund-policy, /contact, /cookies, /sms-terms, /terms, /privacy.

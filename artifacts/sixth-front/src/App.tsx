@@ -11,6 +11,8 @@ import SmsEmailTermsPage from "@/pages/legal/sms-terms";
 import CodeReview from "@/pages/code-review";
 import OrderCheckout from "@/pages/order";
 import HowPaymentsWorkPage from "@/pages/how-payments-work";
+import RefundPolicy from "@/pages/refund-policy";
+import Contact from "@/pages/contact";
 
 function AppRouter() {
   return (
@@ -28,6 +30,8 @@ function AppRouter() {
       <Route path="/cookies" component={CookieNoticePage} />
       <Route path="/sms-terms" component={SmsEmailTermsPage} />
       <Route path="/how-it-works-payments" component={HowPaymentsWorkPage} />
+      <Route path="/refund-policy" component={RefundPolicy} />
+      <Route path="/contact" component={Contact} />
       <Route component={NotFound} />
     </Switch>
   );
