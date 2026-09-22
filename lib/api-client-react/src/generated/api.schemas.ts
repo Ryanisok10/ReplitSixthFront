@@ -220,6 +220,73 @@ export interface MerchantOnboardingAccess {
   token: string;
 }
 
+export type CreateOrderInputServiceType = typeof CreateOrderInputServiceType[keyof typeof CreateOrderInputServiceType];
+
+
+export const CreateOrderInputServiceType = {
+  food: 'food',
+  merch: 'merch',
+  bundle: 'bundle',
+  landing: 'landing',
+  qr: 'qr',
+} as const;
+
+export interface CreateOrderInput {
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ */
+  merchantId: string;
+  /** @minimum 1 */
+  orderTotalCents: number;
+  serviceType: CreateOrderInputServiceType;
+  currency?: string;
+}
+
+export type OrderTransactionServiceType = typeof OrderTransactionServiceType[keyof typeof OrderTransactionServiceType];
+
+
+export const OrderTransactionServiceType = {
+  food: 'food',
+  merch: 'merch',
+  bundle: 'bundle',
+  landing: 'landing',
+  qr: 'qr',
+} as const;
+
+export type OrderTransactionStatus = typeof OrderTransactionStatus[keyof typeof OrderTransactionStatus];
+
+
+export const OrderTransactionStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  paid: 'paid',
+  failed: 'failed',
+  canceled: 'canceled',
+} as const;
+
+export interface OrderTransaction {
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ */
+  id: string;
+  /** @pattern ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ */
+  merchantId: string;
+  stripePaymentIntentId: string;
+  stripeConnectedAccountId: string;
+  orderTotalCents: number;
+  applicationFeeCents: number;
+  serviceType: OrderTransactionServiceType;
+  currency: string;
+  status: OrderTransactionStatus;
+  /** @nullable */
+  stripeStatus?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderTransactionResponse {
+  transaction: OrderTransaction;
+  /** Stripe PaymentIntent client secret for frontend payment */
+  clientSecret: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
+

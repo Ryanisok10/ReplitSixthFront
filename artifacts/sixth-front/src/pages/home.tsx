@@ -1,4 +1,8 @@
-export { Home as default } from '@/App';
+import { useState, FormEvent } from 'react';
+import { Link } from 'wouter';
+import { useSubmitPreviewLead } from '@workspace/api-client-react';
+import logoImage from '/assets/logo-icon.png';
+import wordmarkImage from '/assets/wordmark.png';
 
 const scrollToId = (id: string) => {
   if (id === 'top') {

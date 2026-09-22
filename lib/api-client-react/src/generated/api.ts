@@ -21,11 +21,14 @@ import type {
 
 import type {
   AgreementBundle,
+  CreateOrderInput,
   ErrorResponse,
   HealthStatus,
   IntakeResult,
   MerchantOnboardingAccess,
   MerchantOnboardingStatus,
+  OrderTransaction,
+  OrderTransactionResponse,
   PreviewLeadInput,
   SignupReferenceCodeInput,
   StandardSignupInput
@@ -40,6 +43,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -58,6 +62,8 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export const getHealthCheckUrl = () => {
+
+
 
 
   return `/api/healthz`
@@ -79,11 +85,16 @@ export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]):
 );}
 
 
+
+
+
 export const getHealthCheckQueryKey = () => {
     return [
     `/api/healthz`
     ] as const;
     }
+
+
 export const getHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
@@ -92,7 +103,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
@@ -119,7 +134,14 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 }
 
 
+
+
+
+
+
 export const getGetMerchantAgreementUrl = () => {
+
+
 
 
   return `/api/merchant-intake/agreement`
@@ -140,11 +162,15 @@ export const getMerchantAgreement = async ( options?: Parameters<typeof customFe
 );}
 
 
+
+
+
 export const getGetMerchantAgreementQueryKey = () => {
     return [
     `/api/merchant-intake/agreement`
     ] as const;
     }
+
 
 export const getGetMerchantAgreementQueryOptions = <TData = Awaited<ReturnType<typeof getMerchantAgreement>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMerchantAgreement>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
@@ -154,7 +180,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetMerchantAgreementQueryKey();
 
 
+
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getMerchantAgreement>>> = ({ signal }) => getMerchantAgreement({ signal, ...requestOptions });
+
+
+
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMerchantAgreement>>, TError, TData> & { queryKey: QueryKey }
@@ -181,7 +211,14 @@ export function useGetMerchantAgreement<TData = Awaited<ReturnType<typeof getMer
 }
 
 
+
+
+
+
+
 export const getSubmitPreviewLeadUrl = () => {
+
+
 
 
   return `/api/merchant-intake/preview`
@@ -202,6 +239,9 @@ export const submitPreviewLead = async (previewLeadInput: PreviewLeadInput, opti
 );}
 
 
+
+
+
 export const getSubmitPreviewLeadMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPreviewLead>>, TError,{data: BodyType<PreviewLeadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitPreviewLead>>, TError,{data: BodyType<PreviewLeadInput>}, TContext> => {
@@ -214,11 +254,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitPreviewLead>>, {data: BodyType<PreviewLeadInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitPreviewLead(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -244,6 +290,8 @@ export const useSubmitPreviewLead = <TError = ErrorType<ErrorResponse>,
 export const getSubmitSignupReferenceCodeUrl = () => {
 
 
+
+
   return `/api/merchant-intake/signup/reference-code`
 }
 
@@ -262,6 +310,9 @@ export const submitSignupReferenceCode = async (signupReferenceCodeInput: Signup
 );}
 
 
+
+
+
 export const getSubmitSignupReferenceCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSignupReferenceCode>>, TError,{data: BodyType<SignupReferenceCodeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitSignupReferenceCode>>, TError,{data: BodyType<SignupReferenceCodeInput>}, TContext> => {
@@ -274,11 +325,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitSignupReferenceCode>>, {data: BodyType<SignupReferenceCodeInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitSignupReferenceCode(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -304,6 +361,8 @@ export const useSubmitSignupReferenceCode = <TError = ErrorType<ErrorResponse>,
 export const getSubmitStandardSignupUrl = () => {
 
 
+
+
   return `/api/merchant-intake/signup/standard`
 }
 
@@ -322,6 +381,9 @@ export const submitStandardSignup = async (standardSignupInput: StandardSignupIn
 );}
 
 
+
+
+
 export const getSubmitStandardSignupMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitStandardSignup>>, TError,{data: BodyType<StandardSignupInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitStandardSignup>>, TError,{data: BodyType<StandardSignupInput>}, TContext> => {
@@ -334,11 +396,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitStandardSignup>>, {data: BodyType<StandardSignupInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  submitStandardSignup(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -364,6 +432,8 @@ export const useSubmitStandardSignup = <TError = ErrorType<ErrorResponse>,
 export const getCheckMerchantOnboardingStatusUrl = () => {
 
 
+
+
   return `/api/merchant-onboarding/status`
 }
 
@@ -382,6 +452,9 @@ export const checkMerchantOnboardingStatus = async (merchantOnboardingAccess: Me
 );}
 
 
+
+
+
 export const getCheckMerchantOnboardingStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, TError,{data: BodyType<MerchantOnboardingAccess>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, TError,{data: BodyType<MerchantOnboardingAccess>}, TContext> => {
@@ -394,11 +467,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkMerchantOnboardingStatus>>, {data: BodyType<MerchantOnboardingAccess>}> = (props) => {
           const {data} = props ?? {};
 
           return  checkMerchantOnboardingStatus(data,requestOptions)
         }
+
+
+
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -420,3 +499,152 @@ export const useCheckMerchantOnboardingStatus = <TError = ErrorType<ErrorRespons
       > => {
       return useMutation(getCheckMerchantOnboardingStatusMutationOptions(options));
     }
+
+export const getCreateOrderUrl = () => {
+
+
+
+
+  return `/api/orders`
+}
+
+/**
+ * @summary Create an order transaction
+ */
+export const createOrder = async (createOrderInput: CreateOrderInput, options?: Parameters<typeof customFetch>[1]): Promise<OrderTransactionResponse> => {
+
+  return customFetch<OrderTransactionResponse>(getCreateOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createOrderInput)
+  }
+);}
+
+
+
+
+
+export const getCreateOrderMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<CreateOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<CreateOrderInput>}, TContext> => {
+
+const mutationKey = ['createOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrder>>, {data: BodyType<CreateOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createOrder>>>
+    export type CreateOrderMutationBody = BodyType<CreateOrderInput>
+    export type CreateOrderMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Create an order transaction
+ */
+export const useCreateOrder = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<CreateOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createOrder>>,
+        TError,
+        {data: BodyType<CreateOrderInput>},
+        TContext
+      > => {
+      return useMutation(getCreateOrderMutationOptions(options));
+    }
+
+export const getGetOrderUrl = (id: string,) => {
+
+
+
+
+  return `/api/orders/${id}`
+}
+
+/**
+ * @summary Get order details by ID
+ */
+export const getOrder = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<OrderTransaction> => {
+
+  return customFetch<OrderTransaction>(getGetOrderUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrderQueryKey = (id: string,) => {
+    return [
+    `/api/orders/${id}`
+    ] as const;
+    }
+
+
+export const getGetOrderQueryOptions = <TData = Awaited<ReturnType<typeof getOrder>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrderQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrder>>> = ({ signal }) => getOrder(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrderQueryResult = NonNullable<Awaited<ReturnType<typeof getOrder>>>
+export type GetOrderQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get order details by ID
+ */
+
+export function useGetOrder<TData = Awaited<ReturnType<typeof getOrder>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrderQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+

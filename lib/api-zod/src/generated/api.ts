@@ -15,6 +15,8 @@ import * as zod from 'zod';
 export const HealthCheckResponse = zod.object({
   "status": zod.string()
 })
+
+
 /**
  * @summary Get the active merchant agreement bundle
  */
@@ -26,6 +28,8 @@ export const GetMerchantAgreementResponse = zod.object({
   "pricingScheduleTitle": zod.string(),
   "pricingScheduleContent": zod.string()
 })
+
+
 /**
  * @summary Submit a storefront preview request
  */
@@ -49,6 +53,7 @@ export const submitPreviewLeadBodyDailyOrderVolumeMax = 80;
 export const submitPreviewLeadBodyCommentsMax = 2000;
 
 export const submitPreviewLeadBodyReferenceCodeMax = 64;
+
 
 
 export const SubmitPreviewLeadBody = zod.object({
@@ -101,6 +106,7 @@ export const submitSignupReferenceCodeBodyBasicsMonthlyOrderVolumeMax = 80;
 
 
 export const submitSignupReferenceCodeBodyReferenceCodeMax = 64;
+
 
 
 export const SubmitSignupReferenceCodeBody = zod.object({
@@ -157,6 +163,7 @@ export const submitStandardSignupBodyBasicsMonthlyOrderVolumeMax = 80;
 export const submitStandardSignupBodyAgreementVersionMax = 80;
 
 
+
 export const SubmitStandardSignupBody = zod.object({
   "idempotencyKey": zod.string().regex(submitStandardSignupBodyIdempotencyKeyRegExp),
   "basics": zod.object({
@@ -194,6 +201,7 @@ export const checkMerchantOnboardingStatusBodyTokenMin = 32;
 export const checkMerchantOnboardingStatusBodyTokenMax = 200;
 
 
+
 export const CheckMerchantOnboardingStatusBody = zod.object({
   "merchantId": zod.string().regex(checkMerchantOnboardingStatusBodyMerchantIdRegExp),
   "token": zod.string().min(checkMerchantOnboardingStatusBodyTokenMin).max(checkMerchantOnboardingStatusBodyTokenMax)
@@ -209,4 +217,72 @@ export const CheckMerchantOnboardingStatusResponse = zod.object({
   "message": zod.string(),
   "onboardingUrl": zod.string().nullish()
 })
+
+
+/**
+ * @summary Create an order transaction
+ */
+export const createOrderBodyMerchantIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+
+export const createOrderBodyCurrencyDefault = `usd`;
+
+export const CreateOrderBody = zod.object({
+  "merchantId": zod.string().regex(createOrderBodyMerchantIdRegExp),
+  "orderTotalCents": zod.number().int().min(1),
+  "serviceType": zod.enum(['food', 'merch', 'bundle', 'landing', 'qr']),
+  "currency": zod.string().default(createOrderBodyCurrencyDefault)
+})
+
+export const createOrderResponseTransactionIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+export const createOrderResponseTransactionMerchantIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+
+
+export const CreateOrderResponse = zod.object({
+  "transaction": zod.object({
+  "id": zod.string().regex(createOrderResponseTransactionIdRegExp),
+  "merchantId": zod.string().regex(createOrderResponseTransactionMerchantIdRegExp),
+  "stripePaymentIntentId": zod.string(),
+  "stripeConnectedAccountId": zod.string(),
+  "orderTotalCents": zod.number().int(),
+  "applicationFeeCents": zod.number().int(),
+  "serviceType": zod.enum(['food', 'merch', 'bundle', 'landing', 'qr']),
+  "currency": zod.string(),
+  "status": zod.enum(['pending', 'processing', 'paid', 'failed', 'canceled']),
+  "stripeStatus": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}),
+  "clientSecret": zod.string().describe('Stripe PaymentIntent client secret for frontend payment')
+})
+
+
+/**
+ * @summary Get order details by ID
+ */
+export const getOrderPathIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+
+
+export const GetOrderParams = zod.object({
+  "id": zod.coerce.string().regex(getOrderPathIdRegExp)
+})
+
+export const getOrderResponseIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+export const getOrderResponseMerchantIdRegExp = new RegExp('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+
+
+export const GetOrderResponse = zod.object({
+  "id": zod.string().regex(getOrderResponseIdRegExp),
+  "merchantId": zod.string().regex(getOrderResponseMerchantIdRegExp),
+  "stripePaymentIntentId": zod.string(),
+  "stripeConnectedAccountId": zod.string(),
+  "orderTotalCents": zod.number().int(),
+  "applicationFeeCents": zod.number().int(),
+  "serviceType": zod.enum(['food', 'merch', 'bundle', 'landing', 'qr']),
+  "currency": zod.string(),
+  "status": zod.enum(['pending', 'processing', 'paid', 'failed', 'canceled']),
+  "stripeStatus": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
 
