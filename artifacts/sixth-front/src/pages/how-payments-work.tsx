@@ -40,44 +40,53 @@ export default function HowPaymentsWorkPage() {
           className="space-y-5 text-[15px] leading-relaxed text-ink/90 font-sans"
         >
           <p>
-            When a customer pays on Sixth Front, the charge goes directly to the
-            merchant&apos;s Stripe account. The merchant is the seller of record, and
-            the merchant&apos;s name appears on the customer&apos;s card statement.
+            When a customer places an order through a Sixth Front-powered merchant
+            website, the payment is processed directly on the merchant&apos;s Stripe
+            connected account. The merchant is responsible for the sale to the customer,
+            and the applicable statement descriptor is determined by the merchant&apos;s
+            Stripe account settings and the card issuer.
           </p>
           <p>
-            Sixth Front&apos;s platform service fee is 8% on food and QR ordering
-            transactions, and 12% on merchandise transactions. This fee is deducted from
-            the merchant&apos;s charge. Customers are never charged separately by Sixth
-            Front.
+            Sixth Front collects a platform application fee of:
+          </p>
+          <ul className="list-disc space-y-2 pl-6">
+            <li>8% on food ordering and QR/table-ordering transactions; and</li>
+            <li>12% on merchandise storefront transactions.</li>
+          </ul>
+          <p>
+            The application fee is collected from the transaction through Stripe Connect.
+            The remaining funds, after applicable Stripe processing fees and the Sixth
+            Front application fee, settle directly to the merchant&apos;s connected Stripe
+            account. Customers are not charged a separate Sixth Front fee for these
+            transactions.
           </p>
           <p>
-            Stripe processes and secures every payment. Sixth Front never stores customer
-            card details.
+            Stripe processes and secures the payment. Sixth Front does not store
+            customers&apos; full payment-card numbers or security codes. Payment
+            information is handled through Stripe&apos;s payment infrastructure.
           </p>
-          <p>
-            Stripe&apos;s terms apply to all payment transactions. Review the{" "}
-            <a
-              href="https://stripe.com/legal/ssa"
-              target="_blank"
-              rel="noreferrer"
-              data-testid="link-stripe-services-agreement"
-              className="underline underline-offset-2 text-red hover:text-tomato transition-colors"
+          <section className="space-y-4 pt-3" aria-labelledby="important-distinction">
+            <h2
+              id="important-distinction"
+              className="text-xl font-display font-bold text-red"
             >
-              Stripe Services Agreement
-            </a>
-            .
-          </p>
-          <p>
-            For payment questions, contact{" "}
-            <a
-              href="mailto:support@sixthfront.com"
-              data-testid="link-payment-support"
-              className="underline underline-offset-2 text-red hover:text-tomato transition-colors"
-            >
-              support@sixthfront.com
-            </a>
-            .
-          </p>
+              Important distinction
+            </h2>
+            <p>
+              This copy should describe only the transaction-based commissions. It should
+              not imply that all Sixth Front fees are collected through Stripe Connect.
+              Your separate:
+            </p>
+            <ul className="list-disc space-y-2 pl-6">
+              <li>POS Sync fee;</li>
+              <li>standalone landing-page fee; and</li>
+              <li>fallback monthly service fees</li>
+            </ul>
+            <p>
+              are operational service fees payable to Operations LLC under the applicable
+              agreement, using the separate ACH or invoice process.
+            </p>
+          </section>
         </article>
         <div className="mt-12 pt-6 border-t border-line">
           <LegalFooter variant="muted" />
