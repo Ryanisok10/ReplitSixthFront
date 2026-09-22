@@ -1,6 +1,4 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, orderTransactionsTable } from "@workspace/db";
 import {
   createOrderTransaction,
   getOrderTransaction,
@@ -41,12 +39,20 @@ router.post("/orders", async (req, res): Promise<void> => {
       currency: currency || "usd",
     });
 
-    res.status(201).json(result);
+    res.status(201).json({
+      ...result,
+      clientSecret: result.paymentIntent.client_secret,
+    });
   } catch (error) {
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Failed to create order transaction",
+    const message = error instanceof Error ? error.message : "Failed to create order transaction";
+    res.status(message === "Merchant is not ready to accept payments" ? 422 : 400).json({
+      error: message,
     });
   }
+});
+
+router.get("/orders/config", (_req, res): void => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
 });
 
 // Retrieve an order transaction by its ID
@@ -109,70 +115,6 @@ router.get("/orders/merchant/:merchantId", async (req, res): Promise<void> => {
   } catch (error) {
     res.status(400).json({
       error: error instanceof Error ? error.message : "Failed to list order transactions",
-    });
-  }
-});
-
-// Simulate paying an order transaction (for testing/mockup flow)
-router.post("/orders/:id/pay", async (req, res): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Missing transaction ID" });
-      return;
-    }
-
-    const [updated] = await db
-      .update(orderTransactionsTable)
-      .set({
-        status: "paid",
-        stripeStatus: "succeeded",
-        updatedAt: new Date(),
-      })
-      .where(eq(orderTransactionsTable.id, id))
-      .returning();
-
-    if (!updated) {
-      res.status(404).json({ error: "Order transaction not found" });
-      return;
-    }
-
-    res.json(updated);
-  } catch (error) {
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Failed to pay order transaction",
-    });
-  }
-});
-
-// Simulate canceling an order transaction
-router.post("/orders/:id/cancel", async (req, res): Promise<void> => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).json({ error: "Missing transaction ID" });
-      return;
-    }
-
-    const [updated] = await db
-      .update(orderTransactionsTable)
-      .set({
-        status: "canceled",
-        stripeStatus: "canceled",
-        updatedAt: new Date(),
-      })
-      .where(eq(orderTransactionsTable.id, id))
-      .returning();
-
-    if (!updated) {
-      res.status(404).json({ error: "Order transaction not found" });
-      return;
-    }
-
-    res.json(updated);
-  } catch (error) {
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Failed to cancel order transaction",
     });
   }
 });

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
+import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import logoImage from "@assets/sixth-front-logo-icon.png";
 import wordmarkImage from "@assets/sixth-front-wordmark-transparent.png";
 import { LegalFooter } from "@/components/legal-footer";
@@ -19,33 +21,108 @@ interface OrderTransaction {
   updatedAt: string;
 }
 
+function PaymentForm({
+  transaction,
+  onPaymentComplete,
+}: {
+  transaction: OrderTransaction;
+  onPaymentComplete: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setFormError(null);
+    setProcessing(true);
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: window.location.href },
+      redirect: "if_required",
+    });
+
+    if (error) {
+      setFormError(error.message || "Payment failed");
+    } else if (paymentIntent) {
+      onPaymentComplete();
+    }
+    setProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handlePayment} className="space-y-6">
+      <h2 className="text-xl font-display font-bold text-ink mb-2">Secure Card Payment</h2>
+      <p className="text-muted text-sm mb-6">
+        Funds settle directly to the merchant. Sixth Front platform fee of{" "}
+        {((transaction.applicationFeeCents / transaction.orderTotalCents) * 100).toFixed(0)}% is
+        deducted automatically.
+      </p>
+
+      {formError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-xl font-bold">
+          {formError}
+        </div>
+      )}
+
+      <div className="rounded-lg border border-line bg-paper/60 p-4">
+        <PaymentElement />
+      </div>
+
+      <div className="pt-4">
+        <button
+          type="submit"
+          disabled={processing || !stripe || !elements}
+          className="w-full bg-tomato hover:bg-tomato-dark text-white font-bold py-4 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-sm flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2 disabled:opacity-50"
+        >
+          {processing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Processing Payment...
+            </>
+          ) : (
+            `Pay ${new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: transaction.currency.toUpperCase(),
+            }).format(transaction.orderTotalCents / 100)}`
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function OrderCheckout() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [transaction, setTransaction] = useState<OrderTransaction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Form State
-  const [cardholderName, setCardholderName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [processing, setProcessing] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [stripe, setStripe] = useState<Stripe | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(
+    new URLSearchParams(window.location.search).get("client_secret"),
+  );
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`/api/orders/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to load order transaction");
-        }
-        return res.json();
-      })
-      .then((data) => {
+    Promise.all([
+      fetch(`/api/orders/${id}`),
+      fetch("/api/orders/config"),
+    ])
+      .then(async ([transactionRes, configRes]) => {
+        if (!transactionRes.ok) throw new Error("Failed to load order transaction");
+        if (!configRes.ok) throw new Error("Failed to load Stripe configuration");
+        const [data, config] = await Promise.all([transactionRes.json(), configRes.json()]);
+        if (!config.publishableKey) throw new Error("Stripe is not configured");
         setTransaction(data);
+        setStripe(await loadStripe(config.publishableKey));
+        if (!clientSecret) {
+          throw new Error("Missing payment details. Please return to the order page and try again.");
+        }
         setError(null);
       })
       .catch((err) => {
@@ -54,71 +131,7 @@ export default function OrderCheckout() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id]);
-
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
-
-    if (!cardholderName.trim()) {
-      setFormError("Cardholder Name is required");
-      return;
-    }
-    if (cardNumber.replace(/\s/g, "").length < 16) {
-      setFormError("Please enter a valid 16-digit card number");
-      return;
-    }
-    if (!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(expiry)) {
-      setFormError("Please enter a valid expiry date (MM/YY)");
-      return;
-    }
-    if (cvc.length < 3) {
-      setFormError("Please enter a valid CVC");
-      return;
-    }
-
-    setFormError(null);
-    setProcessing(true);
-
-    try {
-      const res = await fetch(`/api/orders/${id}/pay`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Payment processing failed");
-      }
-
-      const updated = await res.json();
-      setTransaction(updated);
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Payment failed");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    if (!id || !window.confirm("Are you sure you want to cancel this payment?")) return;
-    try {
-      const res = await fetch(`/api/orders/${id}/cancel`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Cancellation failed");
-      }
-
-      const updated = await res.json();
-      setTransaction(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Cancellation failed");
-    }
-  };
+  }, [id, clientSecret]);
 
   const formatAmount = (cents: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -308,120 +321,24 @@ export default function OrderCheckout() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handlePayment} className="space-y-6">
-                <h2 className="text-xl font-display font-bold text-ink mb-2">
-                  Secure Card Payment
-                </h2>
-                <p className="text-muted text-sm mb-6">
-                  Funds settle directly to the merchant. Sixth Front platform fee of {((transaction.applicationFeeCents / transaction.orderTotalCents) * 100).toFixed(0)}% is deducted automatically.
-                </p>
-
-                {formError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-xl font-bold">
-                    {formError}
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
-                      Cardholder Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Jane Doe"
-                      value={cardholderName}
-                      onChange={(e) => setCardholderName(e.target.value)}
-                      className="w-full p-3.5 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-sm"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="4242 4242 4242 4242"
-                        value={cardNumber}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "").substring(0, 16);
-                          const formatted = val.replace(/(.{4})/g, "$1 ").trim();
-                          setCardNumber(formatted);
-                        }}
-                        className="w-full p-3.5 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-sm font-mono"
-                        required
-                      />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-lg">
-                        💳
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
-                        Expiration Date
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        value={expiry}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "").substring(0, 4);
-                          if (val.length >= 2) {
-                            setExpiry(`${val.substring(0, 2)}/${val.substring(2)}`);
-                          } else {
-                            setExpiry(val);
-                          }
-                        }}
-                        className="w-full p-3.5 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-sm font-mono"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
-                        CVC
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        value={cvc}
-                        onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").substring(0, 4))}
-                        className="w-full p-3.5 rounded-lg border border-line bg-paper/60 focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-sm font-mono"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 flex flex-col sm:flex-row gap-3">
-                  <button
-                    type="submit"
-                    disabled={processing}
-                    className="flex-1 bg-tomato hover:bg-tomato-dark text-white font-bold py-4 px-8 rounded-lg shadow-[0_4px_0_rgb(184,52,29)] hover:shadow-[0_2px_0_rgb(184,52,29)] hover:translate-y-[2px] transition-all text-sm flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tomato focus-visible:ring-offset-2 disabled:opacity-50"
-                  >
-                    {processing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Processing Payment...
-                      </>
-                    ) : (
-                      `Pay ${formatAmount(transaction.orderTotalCents, transaction.currency)}`
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    disabled={processing}
-                    className="sm:px-6 py-4 rounded-lg border border-line text-sm text-muted font-bold hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all disabled:opacity-50"
-                  >
-                    Cancel Order
-                  </button>
-                </div>
-              </form>
+              clientSecret && stripe ? (
+                <Elements
+                  stripe={stripe}
+                  options={{
+                    clientSecret,
+                    appearance: { theme: "stripe" },
+                  }}
+                >
+                  <PaymentForm
+                    transaction={transaction}
+                    onPaymentComplete={() => {
+                      setTransaction({ ...transaction, status: "processing" });
+                    }}
+                  />
+                </Elements>
+              ) : (
+                <p className="text-muted text-sm">Loading secure payment details...</p>
+              )
             )}
           </section>
         </div>

@@ -9,12 +9,14 @@ import WebsiteTermsPage from "@/pages/legal/terms";
 import CookieNoticePage from "@/pages/legal/cookies";
 import SmsEmailTermsPage from "@/pages/legal/sms-terms";
 import CodeReview from "@/pages/code-review";
+import OrderCheckout from "@/pages/order";
 
 function AppRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/signup" component={Signup} />
+      <Route path="/order/:id" component={OrderCheckout} />
       <Route
         path="/payment-onboarding/return"
         component={PaymentOnboardingReturn}
