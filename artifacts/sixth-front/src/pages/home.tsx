@@ -1,8 +1,28 @@
 import { useState, FormEvent } from 'react';
 import { Link } from 'wouter';
 import { useSubmitPreviewLead } from '@workspace/api-client-react';
+import { MerchantService } from '@workspace/api-zod';
 import logoImage from '/assets/logo-icon.png';
 import wordmarkImage from '/assets/wordmark.png';
+import heroImage from '/assets/hero.webp';
+import orderImage from '/assets/order.webp';
+import merchImage from '/assets/merch.webp';
+
+const bundleImage = '/assets/merch.webp'; // Using merch as placeholder for bundle
+
+const ReferenceCode = ({ value, onChange }: { value: string, onChange: (value: string) => void }) => (
+  <label className="flex flex-col gap-2">
+    <span className="text-sm font-medium">Reference Code (Optional)</span>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Enter your reference code if you have one"
+      maxLength={64}
+      className="w-full px-4 py-2 rounded-lg border border-line bg-paper focus:bg-white focus:border-tomato focus:ring-2 focus:ring-tomato/20 outline-none transition-all text-[15px]"
+    />
+  </label>
+);
 
 const scrollToId = (id: string) => {
   if (id === 'top') {

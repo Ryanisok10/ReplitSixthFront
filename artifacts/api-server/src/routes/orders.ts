@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request } from "express";
-import { CreateOrderInput, OrderTransactionResponse } from "@workspace/api-zod";
+import { CreateOrderBody, CreateOrderResponse, GetOrderResponse } from "@workspace/api-zod";
 import {
   createOrderTransaction,
   getOrderTransaction,
@@ -14,7 +14,7 @@ const validationErrors = (issues: { path: PropertyKey[]; message: string }[]) =>
   }));
 
 router.post("/orders", async (req, res): Promise<void> => {
-  const parsed = CreateOrderInput.safeParse(req.body);
+  const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) {
     req.log.warn(
       { validationErrors: validationErrors(parsed.error.issues) },
@@ -42,7 +42,7 @@ router.post("/orders", async (req, res): Promise<void> => {
     );
 
     res.status(201).json(
-      OrderTransactionResponse.parse({
+      CreateOrderResponse.parse({
         transaction,
         clientSecret: paymentIntent.client_secret,
       }),
@@ -73,7 +73,7 @@ router.get("/orders/:id", async (req, res): Promise<void> => {
     }
 
     req.log.info({ orderId: id }, "Order retrieved");
-    res.json(transaction);
+    res.json(GetOrderResponse.parse(transaction));
   } catch (error) {
     req.log.error({ err: error }, "Failed to retrieve order");
     throw error;

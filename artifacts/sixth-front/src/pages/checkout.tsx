@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useCreateOrder, useGetOrder } from '@workspace/api-client-react';
+import { useCreateOrder } from '@workspace/api-client-react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   EmbeddedCheckoutProvider,
@@ -11,11 +11,13 @@ const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 );
 
+const VALID_SERVICE_TYPES = ['food', 'merch', 'bundle', 'landing', 'qr'] as const;
+
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
   const params = new URLSearchParams(window.location.search);
   const merchantId = params.get('merchant') ?? '';
-  const serviceType = params.get('service') ?? '';
+  const serviceTypeParam = params.get('service') ?? '';
   const totalCents = parseInt(params.get('total') ?? '0', 10);
   
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -23,7 +25,11 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
 
   const createOrder = useCreateOrder();
-  const getOrder = useGetOrder();
+
+  // Validate serviceType
+  const serviceType = VALID_SERVICE_TYPES.includes(serviceTypeParam as any) 
+    ? serviceTypeParam 
+    : '';
 
   useEffect(() => {
     if (!merchantId || !serviceType || totalCents <= 0) {
@@ -36,7 +42,7 @@ export default function CheckoutPage() {
         data: {
           merchantId,
           orderTotalCents: totalCents,
-          serviceType,
+          serviceType: serviceType as any,
           currency: 'usd',
         },
       },
