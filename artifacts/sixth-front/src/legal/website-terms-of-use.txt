@@ -24,7 +24,7 @@ Website descriptions, estimated savings, pricing examples, screenshots, feature 
 
 6. Third-Party Services
 
-Sixth Front services may depend on third-party providers suchas payment processors, online ordering providers, hosting providers, domain/DNS providers, print-on-demand providers, messaging providers, analytics providers,support/ticketing tools, automation providers, and other technology services. Third-party services may have their own terms, privacy notices, requirements, outages, fees, and limitations.
+Sixth Front services may depend on third-party providers suchas payment processors, online ordering providers, hosting providers, domain/DNS providers, print-on-demand providers, messaging providers, analytics providers,support/ticketing tools, automation providers, and other technology services. Third-party services may have their own terms, privacy notices, requirements, outages, fees, and limitations. Payment transactions on merchant ordering pages are processed directly by Stripe, Inc. on behalf of the applicable merchant; Stripe's use of your payment information is governed by Stripe's Privacy Policy and Services Agreement.
 
 7. Intellectual Property
 

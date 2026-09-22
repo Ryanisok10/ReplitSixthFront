@@ -1,0 +1,40 @@
+Four content tasks for Stripe Connect platform approval. No backend changes. Open new files only where noted, edit existing ones minimally.
+
+1. Footer contact block (artifacts/sixth-front/src/pages/home.tsx)
+In the <footer> element (around line 517), add a contact line between the tagline <p> and the closing </footer> tag:
+
+<p className="text-[12px] text-white/70 tracking-wide">Questions? <a href="mailto:support@sixthfront.com" className="underline underline-offset-2 hover:text-white transition-colors">support@sixthfront.com</a></p>
+Keep everything else in the footer exactly as-is.
+
+2. New page: artifacts/sixth-front/src/pages/how-payments-work.tsx
+Create this page explaining how Direct Charges work for customers. The content must include these points in plain language — keep it short (no more than 400 words on screen):
+
+When a customer pays on Sixth Front, the charge goes directly to the merchant's Stripe account — the merchant is the seller of record and the merchant's name appears on the customer's card statement
+Sixth Front receives a platform service fee as a deduction from that charge — the customer is never charged separately by Sixth Front
+Payments are processed and secured by Stripe — card details are never stored by Sixth Front
+Stripe's terms apply to all payment transactions: link to https://stripe.com/legal/ssa
+For payment questions, contact support@sixthfront.com
+Style it consistently with the legal pages (same layout as /privacy, /terms etc.). Include LegalFooter at the bottom. Route: /how-it-works-payments.
+
+3. LegalFooter link (artifacts/sixth-front/src/components/legal-footer.tsx)
+Add one entry to the links array, after SMS & Email Terms:
+
+ts
+Copy
+{ href: '/how-it-works-payments', label: 'How Payments Work' },
+Try:
+|
+Also add the route in artifacts/sixth-front/src/App.tsx:
+
+tsx
+Copy
+import HowPaymentsWorkPage from "@/pages/how-payments-work";
+// inside <Switch>:
+<Route path="/how-it-works-payments" component={HowPaymentsWorkPage} />
+Try:
+|
+4. Terms of Use §6 addition (artifacts/sixth-front/src/legal/website-terms-of-use.txt)
+Append one sentence to the end of the §6 paragraph (after "and other technology services. Third-party services may have their own terms, privacy notices, requirements, outages, fees, and limitations."):
+
+Payment transactions on merchant ordering pages are processed directly by Stripe, Inc. on behalf of the applicable merchant; Stripe's use of your payment information is governed by Stripe's Privacy Policy and Services Agreement.
+After all four are done: push to GitHub (git add -A && git commit -m "Batch 2: Stripe approval content — footer contact, payments page, legal footer link, terms §6" && git push origin main) and republish the site. Report the live URLs for /how-it-works-payments and the home page footer so I can verify.

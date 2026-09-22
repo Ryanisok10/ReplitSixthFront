@@ -520,6 +520,7 @@ export default function Home() {
           <img src={wordmarkImage} alt="Sixth Front" className="w-[140px] h-[28px] object-contain brightness-0 invert opacity-95" />
         </a>
         <p className="text-[13px] font-medium text-white/90 tracking-wide">Digital support for independent restaurants.</p>
+        <p className="text-[12px] text-white/70 tracking-wide">Questions? <a href="mailto:support@sixthfront.com" className="underline underline-offset-2 hover:text-white transition-colors">support@sixthfront.com</a></p>
       </footer>
     </div>
   );
