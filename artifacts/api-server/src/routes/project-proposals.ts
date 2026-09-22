@@ -9,7 +9,7 @@ import {
 import { requireAuthenticated } from "../middlewares/authMiddleware";
 
 const router: IRouter = Router();
-router.use(requireAuthenticated);
+router.use("/project-proposals", requireAuthenticated);
 
 router.get("/project-proposals", async (_req, res) => {
   res.json({ proposals: await listProjectPatchProposals() });

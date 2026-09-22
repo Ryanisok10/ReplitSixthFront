@@ -1,6 +1,7 @@
 import {
   boolean,
   check,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -190,6 +191,29 @@ export const stripeAccountWebhookEventsTable = pgTable(
       .defaultNow(),
   },
 );
+
+export const orderTransactionsTable = pgTable('order_transactions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  merchantId: uuid('merchant_id').notNull().references(() => merchantsTable.id),
+  stripePaymentIntentId: text('stripe_payment_intent_id').notNull().unique(),
+  stripeConnectedAccountId: text('stripe_connected_account_id').notNull(),
+  orderTotalCents: integer('order_total_cents').notNull(),
+  applicationFeeCents: integer('application_fee_cents').notNull(),
+  serviceType: text('service_type').notNull(),
+  currency: text('currency').notNull().default('usd'),
+  status: text('status').notNull().default('pending'),
+  stripeStatus: text('stripe_status'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export const insertOrderTransactionSchema = createInsertSchema(orderTransactionsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertOrderTransaction = z.infer<typeof insertOrderTransactionSchema>;
+export type OrderTransaction = typeof orderTransactionsTable.$inferSelect;
 
 export const insertAgreementVersionSchema = createInsertSchema(
   agreementVersionsTable,

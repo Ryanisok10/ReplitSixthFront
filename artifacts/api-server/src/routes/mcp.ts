@@ -222,10 +222,9 @@ router.get(
 
 router.get("/oauth/authorize", async (req, res) => {
   const clientId =
-    credentials?.clientId ||
-    (typeof req.body?.client_id === "string" ? req.body.client_id : "");
-    const redirectUri =
-      typeof req.body?.redirect_uri === "string" ? req.body.redirect_uri : "";
+    typeof req.query.client_id === "string" ? req.query.client_id : "";
+  const redirectUri =
+    typeof req.query.redirect_uri === "string" ? req.query.redirect_uri : "";
   const responseType =
     typeof req.query.response_type === "string" ? req.query.response_type : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
@@ -281,7 +280,7 @@ router.get("/oauth/authorize", async (req, res) => {
     return;
   }
 
-    const code = typeof req.body?.code === "string" ? req.body.code : "";
+  const code = randomBytes(32).toString("base64url");
   await db.insert(mcpOauthAuthorizationCodesTable).values({
     codeHash: createHash("sha256").update(code).digest("hex"),
     clientId,
@@ -430,8 +429,7 @@ router.post("/oauth/token", async (req, res) => {
 });
 
 router.post("/mcp", requireMcpAuth, async (req, res) => {
-  const sessionId =
-    typeof req.query.sessionId === "string" ? req.query.sessionId : "";
+  const sessionId = req.headers["mcp-session-id"];
   const existing = typeof sessionId === "string"
     ? streamableTransports.get(sessionId)
     : undefined;
@@ -454,10 +452,12 @@ router.post("/mcp", requireMcpAuth, async (req, res) => {
       return;
     }
 
-  const transport = sseTransports.get(sessionId);
-  const server = createMcpServer();
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+    });
+    const server = createMcpServer();
     transport.onclose = () => {
-    const id = transport.sessionId;
+      const id = transport.sessionId;
       if (id) streamableTransports.delete(id);
       void server.close();
     };
@@ -477,9 +477,11 @@ router.post("/mcp", requireMcpAuth, async (req, res) => {
 });
 
 router.get("/mcp", requireMcpAuth, async (req, res) => {
-  const sessionId =
-    typeof req.query.sessionId === "string" ? req.query.sessionId : "";
-  const transport = sseTransports.get(sessionId);
+  const sessionId = req.headers["mcp-session-id"];
+  const transport =
+    typeof sessionId === "string"
+      ? streamableTransports.get(sessionId)
+      : undefined;
   if (!transport) {
     res.status(400).json({ error: "A valid MCP session is required." });
     return;
@@ -488,9 +490,11 @@ router.get("/mcp", requireMcpAuth, async (req, res) => {
 });
 
 router.delete("/mcp", requireMcpAuth, async (req, res) => {
-  const sessionId =
-    typeof req.query.sessionId === "string" ? req.query.sessionId : "";
-  const transport = sseTransports.get(sessionId);
+  const sessionId = req.headers["mcp-session-id"];
+  const transport =
+    typeof sessionId === "string"
+      ? streamableTransports.get(sessionId)
+      : undefined;
   if (!transport) {
     res.status(404).json({ error: "MCP session not found." });
     return;
@@ -499,7 +503,7 @@ router.delete("/mcp", requireMcpAuth, async (req, res) => {
 });
 
 router.get("/sse", requireMcpAuth, async (req, res) => {
-  const transport = sseTransports.get(sessionId);
+  const transport = new SSEServerTransport("/messages", res);
   sseTransports.set(transport.sessionId, transport);
   const server = createMcpServer();
   transport.onclose = () => {

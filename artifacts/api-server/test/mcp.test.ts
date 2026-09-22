@@ -4,7 +4,6 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import app from "../src/app";
 import { getMcpClientId } from "../src/lib/mcp-server";
-import { randomBytes } from "node:crypto";
 
 const testClientId = "abacus-mcp-regression-test";
 const testSecret = randomBytes(32).toString("base64url");
@@ -110,19 +109,7 @@ describe("Abacus MCP discovery", () => {
     ];
 
     for (const path of protectedResourcePaths) {
-    const response = await request("/api/mcp", {
-      method: "POST",
-      headers: {
-        authorization: "Bearer invalid-abacus-credential",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "initialize",
-        params: {},
-      }),
-    });
+      const response = await request(path);
       assert.equal(response.status, 200, path);
       const metadata = (await response.json()) as Record<string, unknown>;
       assert.equal(metadata.resource, `${expectedOrigin}/mcp`, path);
@@ -153,19 +140,7 @@ describe("Abacus MCP discovery", () => {
     ];
 
     for (const path of authorizationServerPaths) {
-    const response = await request("/api/mcp", {
-      method: "POST",
-      headers: {
-        authorization: "Bearer invalid-abacus-credential",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "initialize",
-        params: {},
-      }),
-    });
+      const response = await request(path);
       assert.equal(response.status, 200, path);
       const metadata = (await response.json()) as Record<string, unknown>;
       assert.equal(
@@ -209,7 +184,9 @@ describe("Abacus MCP authentication", () => {
       signal: AbortSignal.timeout(5_000),
     });
     assert.equal(authorizationResponse.status, 302);
-    const callback = new URL(response.headers.get("location") ?? "");
+    const callback = new URL(
+      authorizationResponse.headers.get("location") ?? "",
+    );
     assert.equal(callback.origin + callback.pathname, redirectUri);
     assert.equal(callback.searchParams.get("state"), "abacus-state");
     const code = callback.searchParams.get("code");
@@ -219,15 +196,21 @@ describe("Abacus MCP authentication", () => {
       method: "POST",
       headers: {
         authorization: `Basic ${Buffer.from(
-          `${getMcpClientId()}:${testSecret}`,
+          `${testClientId}:${testSecret}`,
         ).toString("base64")}`,
         "content-type": "application/x-www-form-urlencoded",
       },
-      body: "grant_type=client_credentials",
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+        code_verifier: codeVerifier,
+      }),
     });
     assert.equal(tokenResponse.status, 200);
     const tokenPayload = (await tokenResponse.json()) as {
       access_token?: unknown;
+      refresh_token?: unknown;
       token_type?: unknown;
     };
     assert.equal(tokenPayload.token_type, "Bearer");
@@ -313,18 +296,9 @@ describe("Abacus MCP authentication", () => {
     authorize.searchParams.set("scope", "mcp:tools");
     authorize.searchParams.set("state", "missing-pkce");
 
-    const response = await request("/api/mcp", {
-      method: "POST",
-      headers: {
-        authorization: "Bearer invalid-abacus-credential",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "initialize",
-        params: {},
-      }),
+    const response = await fetch(authorize, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(5_000),
     });
     assert.equal(response.status, 302);
     const callback = new URL(response.headers.get("location") ?? "");
@@ -348,7 +322,7 @@ describe("Abacus MCP authentication", () => {
     const response = await request("/api/mcp", {
       method: "POST",
       headers: {
-        authorization: "Bearer invalid-abacus-credential",
+        authorization: `Bearer ${encodedPayload}.${signature}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({

@@ -1,6 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { Link } from "wouter";
 
+import { useSubmitPreviewLead } from "@workspace/api-client-react";
+import type { MerchantService } from "@workspace/api-client-react";
 import heroImage from "@assets/sixth-front-hero-attached.png";
 import orderImage from "@assets/sixth-front-order-realistic-16x9.png";
 import merchImage from "@assets/sixth-front-merch-banner-relaxed.png";
@@ -9,8 +11,6 @@ import logoImage from "@assets/sixth-front-logo-icon.png";
 import wordmarkImage from "@assets/sixth-front-wordmark-transparent.png";
 import { ReferenceCode } from "@/components/reference-code";
 import { LegalFooter } from "@/components/legal-footer";
-import { useSubmitPreviewLead } from "@workspace/api-client-react";
-import type { MerchantService } from "@workspace/api-client-react";
 
 const scrollToId = (id: string) => {
   if (id === 'top') {
