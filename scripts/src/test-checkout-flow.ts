@@ -1,49 +1,50 @@
-import { and, eq, isNotNull } from "drizzle-orm";
-import { db, merchantsTable } from "@workspace/db";
 import { createOrderTransaction } from "../../artifacts/api-server/src/lib/order-service";
 
-const [merchant] = await db
-  .select({
-    id: merchantsTable.id,
-    stripeConnectedAccountId: merchantsTable.stripeConnectedAccountId,
-  })
-  .from(merchantsTable)
-  .where(
-    and(
-      isNotNull(merchantsTable.stripeConnectedAccountId),
-      eq(merchantsTable.stripeChargesEnabled, true),
-    ),
-  )
-  .limit(1);
+const merchantId = "ac3b680a-35cd-4c3c-93df-3454f07271bc";
 
-if (!merchant?.stripeConnectedAccountId) {
-  throw new Error("No test merchant with an enabled Stripe connected account was found");
-}
-
-if (!merchant.stripeConnectedAccountId.startsWith("acct_")) {
-  throw new Error("The selected merchant does not have a valid Stripe connected account");
-}
-
-const result = await createOrderTransaction({
-  merchantId: merchant.id,
+const foodResult = await createOrderTransaction({
+  merchantId,
   orderTotalCents: 2500,
   serviceType: "food",
   currency: "usd",
 });
 
-console.log(
-  JSON.stringify(
-    {
-      transaction: result.transaction,
-      paymentIntent: {
-        id: result.paymentIntent.id,
-        status: result.paymentIntent.status,
-        amount: result.paymentIntent.amount,
-        applicationFeeAmount: result.paymentIntent.application_fee_amount,
-        connectedAccount: merchant.stripeConnectedAccountId,
-      },
-    },
-    null,
-    2,
-  ),
-);
+const merchResult = await createOrderTransaction({
+  merchantId,
+  orderTotalCents: 5000,
+  serviceType: "merch",
+  currency: "usd",
+});
+
+const results = [
+  {
+    test: "food",
+    paymentIntentId: foodResult.paymentIntent.id,
+    orderTotalCents: foodResult.transaction.orderTotalCents,
+    applicationFeeCents: foodResult.transaction.applicationFeeCents,
+    rateUsed: "8%",
+    expectedApplicationFeeCents: 200,
+  },
+  {
+    test: "merch",
+    paymentIntentId: merchResult.paymentIntent.id,
+    orderTotalCents: merchResult.transaction.orderTotalCents,
+    applicationFeeCents: merchResult.transaction.applicationFeeCents,
+    rateUsed: "12%",
+    expectedApplicationFeeCents: 600,
+  },
+].map((result) => ({
+  ...result,
+  result:
+    result.applicationFeeCents === result.expectedApplicationFeeCents
+      ? "PASS"
+      : "FAIL",
+}));
+
+for (const result of results) {
+  console.log(JSON.stringify(result, null, 2));
+}
+
+if (results.some((result) => result.result === "FAIL")) {
+  throw new Error("One or more checkout fee assertions failed");
+}

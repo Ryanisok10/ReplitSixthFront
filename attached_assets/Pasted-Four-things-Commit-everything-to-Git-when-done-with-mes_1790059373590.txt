@@ -1,0 +1,34 @@
+Four things. Commit everything to Git when done with message: "Stripe approval batch 3: webhook events, merch test, seed, code cleanup". Redeploy.
+
+1. Remove landing from SERVICE_FEE_RATES in artifacts/api-server/src/lib/order-service.ts. Delete the line landing: 0.08, entirely. The standalone landing page is a $39/month subscription billed via ACH — it is not a Stripe Connect transaction type. If any code calls createOrderTransaction with serviceType: "landing", it should throw an error, which the current guard already handles after this line is removed.
+
+2. Register the missing v2 Stripe Connect webhook events automatically — do NOT ask me to do this in the Stripe dashboard. Create the file scripts/src/register-v2-webhook-events.ts. Using the existing STRIPE_SECRET_KEY env var and the Stripe Node SDK:
+
+Call stripe.v2.core.eventDestinations.list() and find the destination whose url contains oblong-frank-category.replit.app
+Merge these 9 events into that destination (use stripe.v2.core.eventDestinations.update(id, { enabled_events: [...existingEvents, ...newEvents] }) — do not remove any events already on the destination):
+v2.core.account.created
+v2.core.account.updated
+v2.core.account.closed
+v2.core.account[configuration.merchant].updated
+v2.core.account[configuration.merchant].capability_status_updated
+v2.core.account[requirements].updated
+v2.core.account[identity].updated
+v2.core.account[defaults].updated
+v2.core.account_link.returned
+Print the full updated destination object showing all enabled events
+Run: pnpm tsx scripts/src/register-v2-webhook-events.ts and paste the full terminal output
+3. Fix the test merchant and create an idempotent seed. Create the file scripts/src/seed-dev-merchant.ts. Using the existing DB connection (import from @workspace/db), do an upsert on the merchants table:
+
+Find or insert the merchant with stripeConnectedAccountId = 'acct_1UI0yA3B5qyVeGBL'
+Set (or confirm): stripeChargesEnabled = true, stripePayoutsEnabled = true
+Use an upsert (ON CONFLICT DO UPDATE) so this is safe to run repeatedly and survives Replit restarts
+Print the resulting merchant row including its id UUID — we'll need that UUID for the test script
+Then run: pnpm tsx scripts/src/seed-dev-merchant.ts and paste the output. Take note of the merchant id UUID printed.
+
+4. Run both sandbox checkout tests back-to-back. Update scripts/src/test-checkout-flow.ts to call createOrderTransaction twice using the merchant id UUID from step 3:
+
+Test A — serviceType: "food", orderTotalCents: 2500 → assert applicationFeeCents === 200 (8%)
+Test B — serviceType: "merch", orderTotalCents: 5000 → assert applicationFeeCents === 600 (12%)
+For each test, print: PaymentIntent ID, orderTotalCents, applicationFeeCents, rate used, and PASS/FAIL.
+
+Run: pnpm tsx scripts/src/test-checkout-flow.ts and paste the full output.

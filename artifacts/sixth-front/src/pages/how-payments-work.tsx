@@ -65,28 +65,6 @@ export default function HowPaymentsWorkPage() {
             customers&apos; full payment-card numbers or security codes. Payment
             information is handled through Stripe&apos;s payment infrastructure.
           </p>
-          <section className="space-y-4 pt-3" aria-labelledby="important-distinction">
-            <h2
-              id="important-distinction"
-              className="text-xl font-display font-bold text-red"
-            >
-              Important distinction
-            </h2>
-            <p>
-              This copy should describe only the transaction-based commissions. It should
-              not imply that all Sixth Front fees are collected through Stripe Connect.
-              Your separate:
-            </p>
-            <ul className="list-disc space-y-2 pl-6">
-              <li>POS Sync fee;</li>
-              <li>standalone landing-page fee; and</li>
-              <li>fallback monthly service fees</li>
-            </ul>
-            <p>
-              are operational service fees payable to Operations LLC under the applicable
-              agreement, using the separate ACH or invoice process.
-            </p>
-          </section>
         </article>
         <div className="mt-12 pt-6 border-t border-line">
           <LegalFooter variant="muted" />

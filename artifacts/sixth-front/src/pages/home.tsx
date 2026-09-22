@@ -528,10 +528,12 @@ export default function Home() {
         </a>
         <p className="text-[13px] font-medium text-white/90 tracking-wide">Digital support for independent restaurants.</p>
         <p className="text-[12px] text-white/70 tracking-wide">Questions? <a href="mailto:support@sixthfront.com" className="underline underline-offset-2 hover:text-white transition-colors">support@sixthfront.com</a></p>
-        <p className="px-5 text-center text-[12px] text-white/70 tracking-wide">Physical address: 5900 Balcones Drive STE 100, Austin, TX 78731</p>
-        <p className="max-w-3xl px-5 text-center text-[12px] leading-relaxed text-white/70 tracking-wide">Payment processing services provided by Sixth Front Payments LLC. Platform operations managed by Sixth Front Operations LLC.</p>
-        <p className="max-w-3xl px-5 text-center text-[12px] leading-relaxed text-white/70 tracking-wide">Sixth Front is a B2B technology platform providing white-label online ordering and digital storefront infrastructure to independent food and retail merchants.</p>
+        <p className="px-5 text-center text-[12px] text-white/70 tracking-wide">5900 Balcones Drive STE 100, Austin, TX 78731</p>
         <LegalFooter variant="light" />
+        <div className="max-w-2xl mx-5 mt-3 border-t border-white/10 pt-3 text-center text-[11px] leading-relaxed text-white/50">
+          <p>Payment processing services provided by Sixth Front Payments LLC. Platform operations managed by Sixth Front Operations LLC.</p>
+          <p>Sixth Front is a B2B technology platform providing white-label online ordering and digital storefront infrastructure to independent food and retail merchants.</p>
+        </div>
       </footer>
     </div>
   );

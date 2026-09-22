@@ -6,7 +6,6 @@ import type Stripe from "stripe";
 const SERVICE_FEE_RATES: Record<string, number> = {
   food: 0.08,
   qr: 0.08,
-  landing: 0.08,
   merch: 0.12,
   bundle: 0.08,
 };
