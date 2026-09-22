@@ -1,4 +1,17 @@
-export { Home as default } from '@/App';
+import { FormEvent, useState } from 'react';
+import { Link } from 'wouter';
+import { useSubmitPreviewLead } from '@workspace/api-client-react';
+import type { MerchantService } from '@workspace/api-client-react';
+
+import heroImage from '@assets/sixth-front-hero-attached.png';
+import orderImage from '@assets/sixth-front-order-realistic-16x9.png';
+import merchImage from '@assets/sixth-front-merch-banner-relaxed.png';
+import bundleImage from '@assets/Screenshot_2026-08-28_013635_1787897678353.png';
+import logoImage from '@assets/sixth-front-logo-icon.png';
+import wordmarkImage from '@assets/sixth-front-wordmark-transparent.png';
+
+import { ReferenceCode } from '@/components/reference-code';
+import { LegalFooter } from '@/components/legal-footer';
 
 const scrollToId = (id: string) => {
   if (id === 'top') {
