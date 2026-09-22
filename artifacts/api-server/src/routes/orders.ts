@@ -1,6 +1,4 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, orderTransactionsTable } from "@workspace/db";
 import {
   createOrderTransaction,
   getOrderTransaction,
