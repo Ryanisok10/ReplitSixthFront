@@ -102,27 +102,36 @@ export default function OrderCheckout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stripe, setStripe] = useState<Stripe | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(
-    new URLSearchParams(window.location.search).get("client_secret"),
-  );
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     Promise.all([
       fetch(`/api/orders/${id}`),
+      fetch(`/api/orders/${id}/payment-intent`),
       fetch("/api/orders/config"),
     ])
-      .then(async ([transactionRes, configRes]) => {
+      .then(async ([transactionRes, paymentIntentRes, configRes]) => {
         if (!transactionRes.ok) throw new Error("Failed to load order transaction");
+        if (!paymentIntentRes.ok) throw new Error("Failed to load secure payment details");
         if (!configRes.ok) throw new Error("Failed to load Stripe configuration");
-        const [data, config] = await Promise.all([transactionRes.json(), configRes.json()]);
+        const [data, paymentDetails, config] = await Promise.all([
+          transactionRes.json(),
+          paymentIntentRes.json(),
+          configRes.json(),
+        ]);
         if (!config.publishableKey) throw new Error("Stripe is not configured");
         setTransaction(data);
-        setStripe(await loadStripe(config.publishableKey));
-        if (!clientSecret) {
-          throw new Error("Missing payment details. Please return to the order page and try again.");
+        if (!paymentDetails.clientSecret || !paymentDetails.stripeConnectedAccountId) {
+          throw new Error("Stripe returned incomplete payment details");
         }
+        setClientSecret(paymentDetails.clientSecret);
+        setStripe(
+          await loadStripe(config.publishableKey, {
+            stripeAccount: paymentDetails.stripeConnectedAccountId,
+          }),
+        );
         setError(null);
       })
       .catch((err) => {
@@ -131,7 +140,7 @@ export default function OrderCheckout() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id, clientSecret]);
+  }, [id]);
 
   const formatAmount = (cents: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import {
   createOrderTransaction,
+  getOrderPaymentIntent,
   getOrderTransaction,
   getOrderTransactionByPaymentIntentId,
   listOrderTransactions,
@@ -53,6 +54,29 @@ router.post("/orders", async (req, res): Promise<void> => {
 
 router.get("/orders/config", (_req, res): void => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
+});
+
+// Retrieve fresh payment details from Stripe without persisting the client secret
+router.get("/orders/:id/payment-intent", async (req, res): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Missing transaction ID" });
+      return;
+    }
+
+    const paymentDetails = await getOrderPaymentIntent(id);
+    if (!paymentDetails) {
+      res.status(404).json({ error: "Order transaction not found" });
+      return;
+    }
+
+    res.json(paymentDetails);
+  } catch (error) {
+    res.status(400).json({
+      error: error instanceof Error ? error.message : "Failed to retrieve payment details",
+    });
+  }
 });
 
 // Retrieve an order transaction by its ID

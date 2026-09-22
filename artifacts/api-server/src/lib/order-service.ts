@@ -120,6 +120,31 @@ export async function getOrderTransaction(id: string) {
   return transaction;
 }
 
+export async function getOrderPaymentIntent(id: string) {
+  const transaction = await getOrderTransaction(id);
+  if (!transaction) {
+    return null;
+  }
+
+  const stripe = await getUncachableStripeClient();
+  const paymentIntent = await stripe.paymentIntents.retrieve(
+    transaction.stripePaymentIntentId,
+    {},
+    {
+      stripeAccount: transaction.stripeConnectedAccountId,
+    },
+  );
+
+  if (!paymentIntent.client_secret) {
+    throw new Error("PaymentIntent does not have a client secret");
+  }
+
+  return {
+    clientSecret: paymentIntent.client_secret,
+    stripeConnectedAccountId: transaction.stripeConnectedAccountId,
+  };
+}
+
 export async function getOrderTransactionByPaymentIntentId(stripePaymentIntentId: string) {
   const [transaction] = await db
     .select()
