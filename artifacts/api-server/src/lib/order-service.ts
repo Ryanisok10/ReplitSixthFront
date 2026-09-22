@@ -41,6 +41,10 @@ export async function createOrderTransaction(params: {
     throw new Error(`Merchant ${merchantId} does not have a Stripe connected account`);
   }
 
+  if (!merchant.stripeChargesEnabled) {
+    throw new Error(`Merchant ${merchantId} is not ready to accept payments`);
+  }
+
   const stripe = await getUncachableStripeClient();
 
   // Create direct charge PaymentIntent on the connected account
@@ -49,6 +53,7 @@ export async function createOrderTransaction(params: {
       amount: orderTotalCents,
       currency,
       application_fee_amount: applicationFeeCents,
+      automatic_payment_methods: { enabled: true },
     },
     {
       stripeAccount: merchant.stripeConnectedAccountId,
