@@ -9,7 +9,6 @@ import WebsiteTermsPage from "@/pages/legal/terms";
 import CookieNoticePage from "@/pages/legal/cookies";
 import SmsEmailTermsPage from "@/pages/legal/sms-terms";
 import CodeReview from "@/pages/code-review";
-import OrderCheckout from "@/pages/order";
 
 function AppRouter() {
   return (
@@ -25,7 +24,6 @@ function AppRouter() {
       <Route path="/terms" component={WebsiteTermsPage} />
       <Route path="/cookies" component={CookieNoticePage} />
       <Route path="/sms-terms" component={SmsEmailTermsPage} />
-      <Route path="/order/:id" component={OrderCheckout} />
       <Route component={NotFound} />
     </Switch>
   );
